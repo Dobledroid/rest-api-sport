@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+
 import productRoutes from "./routes/products.routes";
 import usersRoutes from "./routes/users.routes";
 import categoriasProdutosRoutes from "./routes/categoriasProductos.routes";
@@ -24,6 +25,10 @@ import cloudinaryRoutes from "./routes/cloudinary.routes";
 import preguntaRoutes from "./routes/pregunta.routes.js";
 import ordenesPedidos from "./routes/ordenesPedidos.routes.js";
 import detallesPedido from "./routes/detallesPedido.routes.js";
+
+//PAGOS
+import paypalRoutes from "./routes/paypal.routes.js";
+
 import morgan from "morgan";
 
 import config from "./config";
@@ -77,5 +82,7 @@ app.use("/api", QRRoutes);
 app.use("/api",preguntaRoutes);
 app.use("/api", ordenesPedidos);
 app.use("/api", detallesPedido);
+
+app.use("/api", paypalRoutes);
 
 export { app };

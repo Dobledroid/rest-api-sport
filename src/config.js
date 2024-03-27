@@ -9,6 +9,17 @@ export default {
   dbDatabase: process.env.DB_DATABASE || "SportGYM",
 };
 
+export const PAYPAL_API_CLIENT = "AeOX3LTg_2aOey2JAkmaCXnq8Dlgb62O0ugbBJ0pCxSOGRYj7l735jEdwnKDdiscr8Si3PvllbtN28sK";
+export const PAYPAL_API_SECRET = "EE86KLsR4SvytkNIrVSstK-vBC60Yl4f7BdUAyBpINIbZNM9Z3DC6o9caDugnVDxjiZ8QhwiuV3oiIWe";
+export const PAYPAL_API = "https://api-m.sandbox.paypal.com"; // url sandbox or live for your app
+
+// Server
+export const HOST =
+  process.env.NODE_ENV === "production"
+    ? process.env.HOST
+    : "http://localhost:" + 4000;
+
+
 // export default {
 //   port: process.env.PORT || 4000,
 //   dbUser: process.env.DB_USER || "user1",

@@ -141,7 +141,7 @@ export const querysUsers = {
   `,  
   deleteUser: "DELETE FROM Usuarios WHERE ID_usuario = @IdUsuario",
   getTotalUsers: "SELECT COUNT(*) FROM Usuarios",
-  updateUserById: "UPDATE Usuarios SET nombre = @nombre, primerApellido = @primerApellido, segundoApellido = @segundoApellido, direccion = @direccion, correoElectronico = @correoElectronico, contraseña = @contraseña, telefono = @telefono, fechaNacimiento = @fechaNacimiento, genero = @genero WHERE ID_usuario = @IdUsuario",
+  updateUserById: "UPDATE Usuarios SET nombre = @nombre, primerApellido = @primerApellido, segundoApellido = @segundoApellido, correoElectronico = @correoElectronico, contraseña = @contraseña, telefono = @telefono, fechaNacimiento = @fechaNacimiento, genero = @genero WHERE ID_usuario = @IdUsuario",
   getUserByEmail: "SELECT * FROM Credenciales WHERE correoElectronico = @correoElectronico;",
   getUserByTelephone: "SELECT * FROM Usuarios WHERE telefono = @telefono;",
   updatePasswordById: "UPDATE Credenciales SET contraseña = @contraseña WHERE ID_usuario = @IdUsuario;",
@@ -270,7 +270,22 @@ export const querysCarritoCompras = {
 };
 
 export const querysDireccionEnvio = {
-  addNewDireccion: "DECLARE @InsertedID TABLE (ID_direccion INT); INSERT INTO DireccionesEnvio (ID_usuario, nombre, apellidos, pais, direccion, ciudad, colonia, estado, codigoPostal, telefono, referencias) OUTPUT INSERTED.ID_direccion INTO @InsertedID VALUES (@ID_usuario, @nombre, @apellidos, @pais, @direccion, @ciudad, @colonia, @estado, @codigoPostal, @telefono, @referencias); SELECT ID_direccion FROM @InsertedID;",
+  addNewDireccion: `
+BEGIN TRANSACTION;
+
+UPDATE DireccionesEnvio
+SET predeterminado = 0
+WHERE ID_usuario = @ID_usuario;
+
+DECLARE @InsertedID TABLE (ID_direccion INT);
+INSERT INTO DireccionesEnvio (ID_usuario, nombre, apellidos, pais, direccion, ciudad, colonia, estado, codigoPostal, telefono, referencias, predeterminado)
+OUTPUT INSERTED.ID_direccion INTO @InsertedID
+VALUES (@ID_usuario, @nombre, @apellidos, @pais, @direccion, @ciudad, @colonia, @estado, @codigoPostal, @telefono, @referencias, 1);
+
+SELECT ID_direccion FROM @InsertedID;
+
+COMMIT TRANSACTION;
+`,
   getDireccionByID: "SELECT * FROM DireccionesEnvio WHERE ID_direccion = @ID_direccion;",
   getDireccionByUserID: "SELECT * FROM DireccionesEnvio WHERE ID_usuario = @ID_usuario;",
   getDireccionesByUserID: "SELECT * FROM DireccionesEnvio WHERE ID_usuario = @ID_usuario;",
@@ -279,10 +294,29 @@ export const querysDireccionEnvio = {
 };
 
 export const querysDireccionEnvioPredeterminada = {
-  upsertDireccionPredeterminada: "IF EXISTS (SELECT 1 FROM DireccionEnvioPredeterminada WHERE ID_usuario = @ID_usuario) UPDATE DireccionEnvioPredeterminada SET ID_direccion = @ID_direccion WHERE ID_usuario = @ID_usuario ELSE INSERT INTO DireccionEnvioPredeterminada (ID_usuario, ID_direccion) VALUES (@ID_usuario, @ID_direccion);",
-  getDireccionPredeterminadaByUserID: "SELECT de.* FROM DireccionEnvioPredeterminada dep INNER JOIN DireccionesEnvio de ON dep.ID_direccion = de.ID_direccion WHERE dep.ID_usuario = @ID_usuario;",
-  deleteDireccionPredeterminadaByUserID: "DELETE FROM DireccionEnvioPredeterminada WHERE ID_usuario = @ID_usuario;"
+  setDireccionPredeterminada: `
+    BEGIN TRANSACTION;
+    UPDATE DireccionesEnvio 
+    SET predeterminado = 0 
+    WHERE ID_usuario = @ID_usuario;
+
+    UPDATE DireccionesEnvio 
+    SET predeterminado = 1 
+    WHERE ID_usuario = @ID_usuario AND ID_direccion = @ID_direccion;
+    COMMIT TRANSACTION;
+  `,
+  getDireccionPredeterminadaByUserID: `
+    SELECT * 
+    FROM DireccionesEnvio 
+    WHERE ID_usuario = @ID_usuario AND predeterminado = 1;
+  `,
+  resetDireccionesPredeterminadas: `
+    UPDATE DireccionesEnvio 
+    SET predeterminado = 0 
+    WHERE ID_usuario = @ID_usuario;
+  `
 };
+
 
 
 export const querysPregunta = {

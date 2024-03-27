@@ -1,7 +1,7 @@
 import { getConnection, querysDireccionEnvio, querysDireccionEnvioPredeterminada, sql } from "../database";
 
 export const addNewDireccion = async (req, res) => {
-  const { ID_usuario, nombre, apellidos, pais, direccion, ciudad, colonia, estado, codigoPostal, telefono, referencias } = req.body;
+  const { ID_usuario, nombre, apellidos, pais, direccion, ciudad, colonia, estado, codigoPostal, telefono, referencias, predeterminado } = req.body;
 
   try {
     const pool = await getConnection();
@@ -19,6 +19,7 @@ export const addNewDireccion = async (req, res) => {
       .input("codigoPostal", sql.NVarChar, codigoPostal)
       .input("telefono", sql.NVarChar, telefono)
       .input("referencias", sql.NVarChar, referencias)
+      .input("predeterminado", sql.Bit, predeterminado)
       .query(querysDireccionEnvio.addNewDireccion);
 
     const insertedID = result.recordset[0].ID_direccion; // Capturar el ID del registro insertado

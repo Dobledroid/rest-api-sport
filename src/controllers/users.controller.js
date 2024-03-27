@@ -131,10 +131,10 @@ export const getTotalUsers = async (req, res) => {
 };
 
 export const updateUserById = async (req, res) => {
-  const { nombre, primerApellido, segundoApellido, fechaNacimiento, genero, correoElectronico, telefono, contrasena, direccion } = req.body;
+  const { nombre, primerApellido, segundoApellido, fechaNacimiento, genero, correoElectronico, telefono, contrasena } = req.body;
 
-  if ((nombre == null || primerApellido == null || segundoApellido == null || fechaNacimiento == null || genero == null || correoElectronico == null || telefono == null || contrasena == null || direccion == null) ||
-    (nombre == '' || primerApellido == '' || segundoApellido == '' || fechaNacimiento == '' || genero == '' || correoElectronico == '' || telefono == null || contrasena == null || direccion == '')) {
+  if ((nombre == null || primerApellido == null || segundoApellido == null || fechaNacimiento == null || genero == null || correoElectronico == null || telefono == null || contrasena == null) ||
+    (nombre == '' || primerApellido == '' || segundoApellido == '' || fechaNacimiento == '' || genero == '' || correoElectronico == '' || telefono == null || contrasena == null )) {
     return res.status(400).json({ msg: "Solicitud incorrecta. Por favor complete todos los campos" });
   }
 
@@ -150,9 +150,8 @@ export const updateUserById = async (req, res) => {
       .input("correoElectronico", sql.VarChar, correoElectronico)
       .input("telefono", sql.BigInt, telefono)
       .input("contraseña", sql.VarChar, contrasena)
-      .input("direccion", sql.VarChar, direccion)
       .query(querysUsers.updateUserById);
-    res.json({ nombre, primerApellido, segundoApellido, fechaNacimiento, genero, correoElectronico, telefono, contrasena, direccion });
+    res.json({ nombre, primerApellido, segundoApellido, fechaNacimiento, genero, correoElectronico, telefono, contrasena });
   } catch (error) {
     res.status(500);
     res.send(error.message);

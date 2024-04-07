@@ -1,5 +1,9 @@
 import { getConnection, sql } from "../database";
 import { querysToken } from "../database/querys";
+import { querysUsers } from "../database/querys";
+
+
+const jwt = require('jsonwebtoken');
 
 export const createNewUserToken = async (req, res) => {
   const { Id, recovery_code } = req.body;
@@ -24,10 +28,10 @@ export const createNewUserToken = async (req, res) => {
         .input("IdUser", sql.Int, Id)
         .input("recovery_code", sql.VarChar, recovery_code)
         .query(querysToken.addNewUserToken);
-        console.log('newToken ', recovery_code)
+      console.log('newToken ', recovery_code)
     }
 
-    res.json({ Id, recovery_code});
+    res.json({ Id, recovery_code });
   } catch (error) {
     res.status(500);
     res.send(error.message);
@@ -39,17 +43,17 @@ export const validateToken = async (req, res) => {
   const { id, token } = req.body;
   console.log("validateToken", id, token)
   try {
-    const user = await getUserTokenById(id);
-    if (!user || user.CodigoRecuperacion !== token) {
+    const userToken = await getUserTokenById(id);
+    if (!userToken || userToken.CodigoRecuperacion !== token) {
       return res.status(401).json({ msg: 'Token inválido' });
     }
 
     await deleteTokenById(id);
 
-    res.status(200).json({ msg: 'Token válido y registro eliminado' });
-
+    const user = await getUserById(id);
+    const jwtToken = jwt.sign({ userId: user.ID_usuario, userEmail: user.correoElectronico, role: user.rol }, 'aaa20989a093bec2e1a3d13c3b1fbd9bbcd2f9df158da4ff32447ef69162cac3322a3a6342ce7ad51b8eb9b8c756d7f2c0c4b9bfca5c40d165f36d472eb6e285');
+    res.status(200).json({ token: jwtToken, msg: 'Token válido y registro eliminado' });
   } catch (error) {
-    console.log("500")
     res.status(500).json({ msg: 'Error al validar el token', error: error.message });
   }
 };
@@ -73,6 +77,23 @@ export const getUserTokenById = async (id) => {
   }
 };
 
+export const getUserById = async (id) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input("IdUsuario", id)
+      .query(querysUsers.getUserById);
+
+    if (result.recordset && result.recordset.length > 0) {
+      return result.recordset[0];
+    } else {
+      return null;
+    }
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const updateTokenById = async (Id, token) => {
   if (Id == null || token == null || Id === '' || token === '') {

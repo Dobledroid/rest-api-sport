@@ -33,12 +33,12 @@ export const getMembershipTypeById = async (req, res) => {
   }
 };
 
-export const getMembresillaIdUnico = async (req, res) => {
+export const getMembresiaIdUnico = async (req, res) => {
   try {
     const pool = await getConnection();
     const result = await pool
       .request()
-      .input("ID_UnicoMembresilla", req.params.ID_UnicoMembresilla)
+      .input("ID_UnicoMembresia", req.params.ID_UnicoMembresia)
       .query(querysTiposMembresillas.getMembresillaIdUnico);
     return res.json(result.recordset[0]);
   } catch (error) {

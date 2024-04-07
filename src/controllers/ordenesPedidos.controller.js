@@ -2,27 +2,43 @@ import moment from 'moment-timezone';
 import { getConnection, querysOrdenesPedidos, sql } from "../database";
 
 export const addNewOrdenPedido = async (req, res) => {
-  const { ID_usuario, fecha, estado, total } = req.body;
+  const { ID_usuario, fecha, total, operacion_id, operacion_status } = req.body;
+  if (
+    ID_usuario == null ||
+    fecha == null ||
+    total == null ||
+    operacion_id == null ||
+    operacion_status == null
+  ) {
+    console.error("Error: Datos incompletos");
+    return res.status(400).json({ msg: "Datos incompletos" });
+  }
 
   try {
     const pool = await getConnection();
-
     const formattedFecha = moment(fecha).format('YYYY-MM-DD HH:mm:ss');
 
-    await pool
+    const result = await pool
       .request()
       .input("ID_usuario", sql.Int, ID_usuario)
       .input("fecha", sql.DateTime, formattedFecha)
-      .input("estado", sql.NVarChar, estado)
       .input("total", sql.Decimal(10, 2), total)
+      .input("operacion_id", sql.NVarChar, operacion_id)
+      .input("operacion_status", sql.NVarChar, operacion_status)
       .query(querysOrdenesPedidos.addNewOrdenPedido);
 
-    res.status(200).json({ msg: "Orden de pedido añadida correctamente" });
+    const insertedID = result.recordset[0].ID_pedido;
+
+
+    console.log("Orden de pedido añadido correctamente OK 200")
+    return insertedID;
   } catch (error) {
-    console.error("Error al añadir la orden de pedido:", error.message);
-    res.status(500).json({ msg: "Error al añadir la orden de pedido" });
+    console.error("Error al añadir la orden de pedido y detalle:", error.message);
+    res.status(500).json({ msg: "Error al añadir la orden de pedido y detalle" });
   }
 };
+
+
 
 export const getOrdenPedidoByUserID = async (req, res) => {
   const { ID_usuario } = req.params;
@@ -70,7 +86,7 @@ export const getOrdenPedidoByID = async (req, res) => {
 
 export const updateOrdenPedidoByID = async (req, res) => {
   const { ID_pedido } = req.params;
-  const { ID_usuario, fecha, estado, total } = req.body;
+  const { ID_usuario, fecha, estado, total, operacion_id, operacion_status } = req.body;
 
   try {
     const pool = await getConnection();
@@ -84,6 +100,8 @@ export const updateOrdenPedidoByID = async (req, res) => {
       .input("fecha", sql.DateTime, formattedFecha)
       .input("estado", sql.NVarChar, estado)
       .input("total", sql.Decimal(10, 2), total)
+      .input("operacion_id", sql.Int, operacion_id)
+      .input("operacion_status", sql.NVarChar, operacion_status)
       .query(querysOrdenesPedidos.updateOrdenPedidoByID);
 
     if (result.rowsAffected[0] === 0) {
@@ -116,5 +134,25 @@ export const deleteOrdenPedidoByID = async (req, res) => {
   } catch (error) {
     console.error("Error al eliminar la orden de pedido:", error.message);
     res.status(500).json({ msg: "Error al eliminar la orden de pedido" });
+  }
+};
+
+export const existeUnOrdenPedidoByID = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input('ID_pedido', req.params.id)
+      .query(querysOrdenesPedidos.existeUnOrdenPedidoByID);
+
+    if (result.recordset.length > 0) {
+      const existeRegistro = result.recordset[0].existeRegistro === 1;
+      res.json({ existeRegistro });
+    } else {
+      res.json({ existeRegistro: false });
+    }
+  } catch (error) {
+    console.error('Error al verificar si existe una orden pedido:', error.message);
+    res.status(500).json({ error: 'Error al verificar la existencia de una orden pedido' });
   }
 };

@@ -127,21 +127,25 @@ export const querys = {
     SubcategoriasProductos SC ON P.ID_subcategoria = SC.ID_subcategoria
   INNER JOIN 
     Marcas M ON P.ID_marca = M.ID_marca
-  `
+  `,
+  updateItemQuantityByID_Orden: "UPDATE Productos SET existencias = @cantidad WHERE ID_producto =  @ID_producto"
 };
 
 
 export const querysUsers = {
   getAllUsers: "SELECT * FROM Usuarios",
-  getUserById: "SELECT * FROM Usuarios WHERE ID_usuario = @IdUsuario",
+  getUserById: `SELECT us.*, cre.correoElectronico, rol.rol FROM Usuarios us
+  INNER JOIN Credenciales cre ON us.ID_usuario = cre.ID_usuario
+  INNER JOIN Roles rol ON us.ID_rol = rol.ID_Rol
+  WHERE us.ID_usuario = @IdUsuario`,
   addNewUser: `
     INSERT INTO Usuarios (nombre, primerApellido, segundoApellido, fechaCreacion, ID_rol) 
     VALUES (@nombre, @primerApellido, @segundoApellido, GETDATE(), 2);
     SELECT SCOPE_IDENTITY() AS ID_usuario;
-  `,  
+  `,
   deleteUser: "DELETE FROM Usuarios WHERE ID_usuario = @IdUsuario",
   getTotalUsers: "SELECT COUNT(*) FROM Usuarios",
-  updateUserById: "UPDATE Usuarios SET nombre = @nombre, primerApellido = @primerApellido, segundoApellido = @segundoApellido, correoElectronico = @correoElectronico, contraseña = @contraseña, telefono = @telefono, fechaNacimiento = @fechaNacimiento, genero = @genero WHERE ID_usuario = @IdUsuario",
+  updateUserById: "UPDATE Usuarios SET nombre = @nombre, primerApellido = @primerApellido, segundoApellido = @segundoApellido, telefono = @telefono, fechaNacimiento = @fechaNacimiento, genero = @genero WHERE ID_usuario = @IdUsuario",
   getUserByEmail: "SELECT * FROM Credenciales WHERE correoElectronico = @correoElectronico;",
   getUserByTelephone: "SELECT * FROM Usuarios WHERE telefono = @telefono;",
   updatePasswordById: "UPDATE Credenciales SET contraseña = @contraseña WHERE ID_usuario = @IdUsuario;",
@@ -184,7 +188,7 @@ export const querysMarcas = {
   deleteMarca: "DELETE FROM Marcas WHERE ID_marca = @IdMarca",
   getTotalMarcas: "SELECT COUNT(*) FROM Marcas",
   updateMarcaById: "UPDATE Marcas SET nombre = @nombre, ID_categoria = @IdCategoria WHERE ID_marca = @IdMarca",
-  getMarcasByID_marca:"SELECT * FROM Marcas WHERE ID_categoria = @IdCategoria"
+  getMarcasByID_marca: "SELECT * FROM Marcas WHERE ID_categoria = @IdCategoria"
 };
 
 export const querysEstadoCuenta = {
@@ -215,22 +219,32 @@ export const querysRoles = {
 export const querysTiposMembresillas = {
   addNewMembershipType: "INSERT INTO TiposMembresia (nombre, costo) VALUES (@nombre, @costo);",
   getMembershipTypeById: "SELECT * FROM TiposMembresia WHERE ID_tipoMembresia = @ID_tipoMembresia;",
-  getMembresillaIdUnico: "SELECT * FROM TiposMembresia WHERE ID_UnicoMembresilla = @ID_UnicoMembresilla;",
+  getMembresillaIdUnico: "SELECT * FROM TiposMembresia WHERE ID_UnicoMembresia = @ID_UnicoMembresia;",
   getAllMembershipTypes: "SELECT * FROM TiposMembresia;",
   deleteMembershipTypeById: "DELETE FROM TiposMembresia WHERE ID_tipoMembresia = @ID_tipoMembresia;",
   updateMembershipTypeById: "UPDATE TiposMembresia SET nombre = @nombre, costo = @costo WHERE ID_tipoMembresia = @ID_tipoMembresia;"
 };
 
 export const querysMembresiasUsuarios = {
-  addNewMembresiaUsuario: "INSERT INTO MembresiasUsuarios (ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento, imagenUrl) VALUES (@ID_usuario, @ID_tipoMembresia, @fechaInicio, @fechaVencimiento, @imagenUrl);",
+  addNewMembresiaUsuario:
+    `
+    DECLARE @InsertedID TABLE (ID_membresiaUsuario INT);
+    INSERT INTO MembresiasUsuarios (ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento, imagenUrl)
+    OUTPUT INSERTED.ID_membresiaUsuario INTO @InsertedID
+    VALUES (@ID_usuario, @ID_tipoMembresia, @fechaInicio, @fechaVencimiento, @imagenUrl);
+
+    SELECT ID_membresiaUsuario FROM @InsertedID;
+   `,
   getMembresiaUsuarioByUserId: "SELECT * FROM MembresiasUsuarios WHERE ID_usuario = @ID_usuario;",
+  getMembresiaUsuarioByIDUnicoMembresia: "SELECT * FROM MembresiasUsuarios WHERE ID_UnicoMembresia = @ID_UnicoMembresia;",
   getMembresiaUsuarioByUserIdAndTypeId: "SELECT * FROM MembresiasUsuarios WHERE ID_usuario = @ID_usuario AND ID_tipoMembresia = @ID_tipoMembresia;",
   updateMembresiaUsuarioById: "UPDATE MembresiasUsuarios SET ID_usuario = @ID_usuario, ID_tipoMembresia = @ID_tipoMembresia, fechaInicio = @fechaInicio, fechaVencimiento = @fechaVencimiento, imagenUrl = @imagenUrl WHERE ID_membresiaUsuario = @ID_membresiaUsuario;",
-  deleteMembresiaUsuarioById: "DELETE FROM MembresiasUsuarios WHERE ID_membresiaUsuario = @ID_membresiaUsuario;"
+  deleteMembresiaUsuarioById: "DELETE FROM MembresiasUsuarios WHERE ID_membresiaUsuario = @ID_membresiaUsuario;",
+  existeUnaMembresiaUsuarioByID: "SELECT TOP 1 ID_membresiaUsuario, COUNT(*) AS existeRegistro FROM MembresiasUsuarios WHERE ID_membresiaUsuario = @ID_membresiaUsuario GROUP BY ID_membresiaUsuario;"
 };
 
 export const querysHistorialMembresias = {
-  addNewHistorialMembresia: "INSERT INTO HistorialMembresias (ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento, precio, operacion_id, operacion_status, operacion_status_detail, operacion_description, operacion_total_paid_amount) VALUES (@ID_usuario, @ID_tipoMembresia, @fechaInicio, @fechaVencimiento, @precio, @operacion_id, @operacion_status, @operacion_status_detail, @operacion_description, @operacion_total_paid_amount);",
+  addNewHistorialMembresia: "INSERT INTO HistorialMembresias (ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento, precio, operacion_id, operacion_status) VALUES (@ID_usuario, @ID_tipoMembresia, @fechaInicio, @fechaVencimiento, @precio, @operacion_id, @operacion_status);",
   getHistorialMembresiaByUserId: "SELECT * FROM HistorialMembresias WHERE ID_usuario = @ID_usuario;",
   getTodasHistorialMembresiasByUsuarioID: `SELECT 
 	HM.*,
@@ -243,12 +257,14 @@ WHERE HM.ID_usuario = @ID_usuario;
 `,
   getHistoriallMembresiaByUserIdAndTypeIdAndOperacionId: "SELECT * FROM HistorialMembresias WHERE ID_usuario = @ID_usuario AND ID_tipoMembresia = @ID_tipoMembresia AND operacion_id = @operacion_id;",
   getHistoriallMembresiaByUserIdAndTypeId: "SELECT * FROM HistorialMembresias WHERE ID_usuario = @ID_usuario AND ID_tipoMembresia = @ID_tipoMembresia;",
-  updateHistorialMembresiaById: "UPDATE HistorialMembresias SET ID_usuario = @ID_usuario, ID_tipoMembresia = @ID_tipoMembresia, fechaInicio = @fechaInicio, fechaVencimiento = @fechaVencimiento, precio = @precio, operacion_id = @operacion_id, operacion_status = @operacion_status, operacion_status_detail = @operacion_status_detail, operacion_description = @operacion_description, operacion_total_paid_amount = @operacion_total_paid_amount WHERE ID_historialMembresia = @ID_historialMembresia;",
+  updateHistorialMembresiaById: "UPDATE HistorialMembresias SET ID_usuario = @ID_usuario, ID_tipoMembresia = @ID_tipoMembresia, fechaInicio = @fechaInicio, fechaVencimiento = @fechaVencimiento, precio = @precio, operacion_id = @operacion_id, operacion_status = @operacion_status WHERE ID_historialMembresia = @ID_historialMembresia;",
   deleteHistorialMembresiaById: "DELETE FROM HistorialMembresias WHERE ID_historialMembresia = @ID_historialMembresia;"
 };
 
 export const querysCarritoCompras = {
   addNewItem: "INSERT INTO CarritoCompras (ID_usuario, ID_producto, cantidad) VALUES (@ID_usuario, @ID_producto, @cantidad);",
+  getItemsByID: "SELECT * FROM CarritoCompras WHERE ID_carrito = @ID_carrito;",
+  getItemsByIDUser: "SELECT * FROM CarritoCompras WHERE ID_usuario = @ID_usuario;",
   getItemsByUserID: `SELECT *
   FROM (
     SELECT CC.*,
@@ -263,10 +279,15 @@ export const querysCarritoCompras = {
     WHERE CC.ID_usuario = @ID_usuario
   ) AS ranked
   WHERE rn = 1;`,
+  getItemsOrderByUserID: `  SELECT CC.*, P.nombre, p.existencias, P.precioFinal FROM CarritoCompras CC
+    INNER JOIN Productos P ON CC.ID_producto = P.ID_producto WHERE CC.ID_usuario = @ID_usuario;`,
   deleteItemByID: "DELETE FROM CarritoCompras WHERE ID_carrito = @ID_carrito;",
+  deleteItemsByUserID: "DELETE FROM CarritoCompras WHERE ID_usuario = @ID_usuario;",
   updateItemQuantityByID: "UPDATE CarritoCompras SET cantidad = @cantidad WHERE ID_carrito = @ID_carrito;",
   getCartItemByIds: "SELECT * FROM CarritoCompras WHERE ID_usuario = @ID_usuario AND ID_producto = @ID_producto;",
   updateCartItem: "UPDATE CarritoCompras SET cantidad = @cantidad WHERE ID_usuario = @ID_usuario AND ID_producto = @ID_producto;",
+  getTotalItemsByUserID: "SELECT COUNT(*) AS totalProductosEnCarrito FROM CarritoCompras WHERE ID_usuario = @ID_usuario;",
+  existeUnProductoEnCarritoByUserIDProductID: "SELECT TOP 1 ID_carrito, COUNT(*) AS existeRegistro FROM CarritoCompras WHERE ID_producto = @ID_producto AND ID_usuario = @ID_usuario GROUP BY ID_carrito;"
 };
 
 export const querysDireccionEnvio = {
@@ -327,20 +348,48 @@ export const querysPregunta = {
 }
 
 export const querysOrdenesPedidos = {
-  addNewOrdenPedido: "INSERT INTO OrdenesPedidos (ID_usuario, fecha, estado, total) VALUES (@ID_usuario, @fecha, @estado, @total);",
+  addNewOrdenPedido: `
+  DECLARE @InsertedID TABLE (ID_pedido INT);
+  INSERT INTO OrdenesPedidos (ID_usuario, fecha, total, operacion_id, operacion_status)
+OUTPUT INSERTED.ID_pedido INTO @InsertedID
+VALUES (@ID_usuario, @fecha, @total, @operacion_id, @operacion_status);
+
+SELECT ID_pedido FROM @InsertedID;
+  `,
   getOrdenPedidoByUserID: "SELECT * FROM OrdenesPedidos WHERE ID_usuario = @ID_usuario;",
   getOrdenPedidoByID: "SELECT * FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido;",
-  updateOrdenPedidoByID: "UPDATE OrdenesPedidos SET ID_usuario = @ID_usuario, fecha = @fecha, estado = @estado, total = @total WHERE ID_pedido = @ID_pedido;",
-  deleteOrdenPedidoByID: "DELETE FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido;"
+  updateOrdenPedidoByID: "UPDATE OrdenesPedidos SET ID_usuario = @ID_usuario, fecha = @fecha, estado = @estado, total = @total, operacion_id = @operacion_id, operacion_status = @operacion_status WHERE ID_pedido = @ID_pedido;",
+  deleteOrdenPedidoByID: "DELETE FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido;",
+  existeUnOrdenPedidoByID: "SELECT TOP 1 ID_pedido, COUNT(*) AS existeRegistro FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido GROUP BY ID_pedido;"
 };
 
-
 export const querysDetallesPedido = {
-  addNewDetallePedido: `INSERT INTO DetallesPedido (ID_pedido, ID_producto, cantidad, precioUnitario, operacion_id, operacion_status, operacion_status_detail, operacion_description) 
-                        VALUES (@ID_pedido, @ID_producto, @cantidad, @precioUnitario, @operacion_id, @operacion_status, @operacion_status_detail, @operacion_description);`,
+  addNewDetallePedido: `INSERT INTO DetallesPedido (ID_pedido, ID_producto, cantidad, precioUnitario) VALUES (@ID_pedido, @ID_producto, @cantidad, @precioUnitario);`,
   getDetallesPedidoByPedidoID: `SELECT * FROM DetallesPedido WHERE ID_pedido = @ID_pedido;`,
+  getDetallesPedidosByIdUser:`  SELECT * FROM (
+    SELECT OP.ID_pedido, 
+    OP.operacion_id, OP.fecha, P.nombre, DP.cantidad, DP.precioUnitario,
+    IP.imagenUrl,
+    ROW_NUMBER() OVER (PARTITION BY DP.ID_detalle ORDER BY IP.ID_imagen) AS rn FROM OrdenesPedidos OP 
+    INNER JOIN DetallesPedido DP ON OP.ID_pedido = DP.ID_pedido
+    INNER JOIN Productos P ON DP.ID_producto = P.ID_producto
+    INNER JOIN ImagenesProducto IP ON P.ID_producto = IP.ID_producto
+    WHERE OP.ID_usuario = @ID_usuario
+  ) AS ranked
+    WHERE rn = 1`,
+  getItemsDetallesOrdenByUserID: `
+  SELECT * FROM (
+    SELECT OP.ID_pedido, 
+    OP.operacion_id, P.nombre, 
+    IP.imagenUrl,
+    ROW_NUMBER() OVER (PARTITION BY DP.ID_detalle ORDER BY IP.ID_imagen) AS rn FROM OrdenesPedidos OP 
+    INNER JOIN DetallesPedido DP ON OP.ID_pedido = DP.ID_pedido
+    INNER JOIN Productos P ON DP.ID_producto = P.ID_producto
+    INNER JOIN ImagenesProducto IP ON P.ID_producto = IP.ID_producto
+    WHERE OP.ID_pedido = @ID_pedido
+  ) AS ranked
+    WHERE rn = 1`,
   getDetallePedidoByID: `SELECT * FROM DetallesPedido WHERE ID_detalle = @ID_detalle;`,
-  updateDetallePedidoByID: `UPDATE DetallesPedido SET ID_pedido = @ID_pedido, ID_producto = @ID_producto, cantidad = @cantidad, precioUnitario = @precioUnitario, operacion_id = @operacion_id, operacion_status = @operacion_status, operacion_status_detail = @operacion_status_detail, operacion_description = @operacion_description 
-                            WHERE ID_detalle = @ID_detalle;`,
+  updateDetallePedidoByID: `UPDATE DetallesPedido SET ID_pedido = @ID_pedido, ID_producto = @ID_producto, cantidad = @cantidad, precioUnitario = @precioUnitario WHERE ID_detalle = @ID_detalle;`,
   deleteDetallePedidoByID: `DELETE FROM DetallesPedido WHERE ID_detalle = @ID_detalle;`
 };

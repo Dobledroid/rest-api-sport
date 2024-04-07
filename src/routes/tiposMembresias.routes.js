@@ -5,13 +5,13 @@ import {
   getAllMembershipTypes,
   deleteMembershipTypeById,
   updateMembershipTypeById,
-  getMembresillaIdUnico
+  getMembresiaIdUnico
 } from "../controllers/tiposMembresias.controller";
 
 const router = Router();
 
 router.get("/membershipTypes", getAllMembershipTypes);
-router.get("/membresillasIdUnico/:ID_UnicoMembresilla", getMembresillaIdUnico);
+router.get("/membresiasIdUnico/:ID_UnicoMembresia", getMembresiaIdUnico);
 router.post("/membershipTypes", addNewMembershipType);
 router.get("/membershipTypes/:id", getMembershipTypeById);
 router.delete("/membershipTypes/:id", deleteMembershipTypeById);

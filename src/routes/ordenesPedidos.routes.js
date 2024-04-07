@@ -4,13 +4,15 @@ import {
   getOrdenPedidoByUserID,
   getOrdenPedidoByID,
   updateOrdenPedidoByID,
-  deleteOrdenPedidoByID
+  deleteOrdenPedidoByID,
+  existeUnOrdenPedidoByID
 } from "../controllers/ordenesPedidos.controller";
 
 const router = Router();
 
 router.post("/orden-pedido", addNewOrdenPedido);
 router.get("/orden-pedido/usuario/:ID_usuario", getOrdenPedidoByUserID);
+router.get("/orden-pedido-existe/:id", existeUnOrdenPedidoByID);
 router.get("/orden-pedido/:ID_pedido", getOrdenPedidoByID);
 router.put("/orden-pedido/:ID_pedido", updateOrdenPedidoByID);
 router.delete("/orden-pedido/:ID_pedido", deleteOrdenPedidoByID);

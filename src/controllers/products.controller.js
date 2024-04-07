@@ -78,7 +78,7 @@ export const createNewProduct = async (req, res) => {
   const { nombre, descripcion, ID_categoria, ID_subcategoria, ID_marca, precio, precioDescuento, existencias, imagenUrl } = req.body;
 
   try {
-    if (!nombre || !descripcion || !ID_categoria || !ID_subcategoria || !ID_marca || !precio || !precioDescuento || !existencias || !imagenUrl ) {
+    if (!nombre || !descripcion || !ID_categoria || !ID_subcategoria || !ID_marca || !precio || !precioDescuento || !existencias || !imagenUrl) {
       return res.status(400).json({ msg: 'Solicitud incorrecta. Por favor proporcione todos los campos requeridos' });
     }
 
@@ -131,9 +131,9 @@ export const getProductByIdWithImagens = async (req, res) => {
   try {
     const pool = await getConnection();
     const result = await pool
-    .request()
-    .input("ID_producto", req.params.id)
-    .query(querys.getProductByIdWithImagens);
+      .request()
+      .input("ID_producto", req.params.id)
+      .query(querys.getProductByIdWithImagens);
     res.json(result.recordset);
   } catch (error) {
     console.log("error", error)
@@ -195,6 +195,46 @@ export const updateProductById = async (req, res) => {
       .query(querys.updateProductById);
 
     res.json({ nombre, descripcion, ID_categoria, ID_subcategoria, ID_marca, precio, precioDescuento, existencias });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
+
+export const updateItemQuantityByID_Orden = async (req, res) => {
+  const { ID_producto, cantidad } = req.body;
+
+  if (ID_producto == null || cantidad == null) {
+    return res.status(400).json({ msg: 'Solicitud incorrecta. Proporcione el ID del artículo del carrito y la cantidad' });
+  }
+
+  try {
+
+    const pool = await getConnection();
+
+    const productResult = await pool
+      .request()
+      .input("IdProducto", sql.Int, ID_producto)
+      .query(querys.getProductById);
+
+    if (!productResult.recordset.length) {
+      return res.status(404).json({ msg: 'El producto no fue encontrado' });
+    }
+
+    const existenciaActual = productResult.recordset[0].existencias;
+    const nuevaExistencia = existenciaActual - cantidad;
+    if (nuevaExistencia < 0) {
+      return res.status(400).json({ msg: 'La cantidad especificada es mayor que la existencia actual del producto' });
+    }
+
+    await pool
+      .request()
+      .input("cantidad", sql.Int, nuevaExistencia)
+      .input("ID_producto", sql.Int, ID_producto)
+      .query(querys.updateItemQuantityByID_Orden);
+
+    console.log("Existencia actualizada OK 200")
+    // res.json({ msg: 'Cantidad de artículo actualizada correctamente' });11
   } catch (error) {
     res.status(500).send(error.message);
   }

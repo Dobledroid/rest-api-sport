@@ -30,7 +30,7 @@ export const getTodasHistorialMembresiasByUsuarioID = async (req, res) => {
 
 
 export const addNewHistorialMembresia = async (req, res) => {
-  // console.log("addNewHistorialMembresia", req.body)
+  console.log("addNewHistorialMembresia", req.body)
   const {
     ID_usuario,
     ID_tipoMembresia,
@@ -38,10 +38,7 @@ export const addNewHistorialMembresia = async (req, res) => {
     fechaVencimiento,
     precio,
     operacion_id,
-    operacion_status,
-    operacion_status_detail,
-    operacion_description,
-    operacion_total_paid_amount
+    operacion_status
   } = req.body;
 
   if (
@@ -51,16 +48,15 @@ export const addNewHistorialMembresia = async (req, res) => {
     fechaVencimiento == null ||
     precio == null ||
     operacion_id == null ||
-    operacion_status == null ||
-    operacion_status_detail == null ||
-    operacion_description == null ||
-    operacion_total_paid_amount == null
+    operacion_status == null
   ) {
     return res.status(400).json({ msg: 'Solicitud incorrecta. Por favor proporcione todos los campos requeridos' });
   }
 
   const fechaInicioFormateada = moment(fechaInicio).subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
   const fechaVencimientoFormateada = moment(fechaVencimiento).subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
+  
+  console.log(fechaInicioFormateada, fechaVencimientoFormateada)
   try {
     const pool = await getConnection();
     await pool
@@ -70,12 +66,10 @@ export const addNewHistorialMembresia = async (req, res) => {
       .input("fechaInicio", sql.DateTime, fechaInicioFormateada)
       .input("fechaVencimiento", sql.DateTime, fechaVencimientoFormateada)
       .input("precio", sql.Decimal(10, 2), precio)
-      .input("operacion_id", sql.Int, operacion_id)
+      .input("operacion_id", sql.NVarChar, operacion_id)
       .input("operacion_status", sql.NVarChar(50), operacion_status)
-      .input("operacion_status_detail", sql.NVarChar(50), operacion_status_detail)
-      .input("operacion_description", sql.NVarChar(sql.MAX), operacion_description)
-      .input("operacion_total_paid_amount", sql.Decimal(10, 2), operacion_total_paid_amount)
       .query(querysHistorialMembresias.addNewHistorialMembresia);
+
     console.log("addNewHistorialMembresia OK 200")
     // res.sendStatus(200);
   } catch (error) {

@@ -1,12 +1,24 @@
-import moment from 'moment-timezone';
 import { getConnection, querysDetallesPedido, sql } from "../database";
+
+export const getDetallesPedidosByIdUser = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input("ID_usuario", req.params.ID_usuario)
+      .query(querysDetallesPedido.getDetallesPedidosByIdUser);
+    return res.json(result.recordset);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
 
 export const getDetallesPedidoByPedidoID = async (req, res) => {
   try {
     const pool = await getConnection();
     const result = await pool
       .request()
-      .input("ID_pedido", req.params.id)
+      .input("ID_pedido", req.params.ID_pedido)
       .query(querysDetallesPedido.getDetallesPedidoByPedidoID);
     return res.json(result.recordset);
   } catch (error) {
@@ -14,27 +26,28 @@ export const getDetallesPedidoByPedidoID = async (req, res) => {
   }
 };
 
+export const getItemsDetallesOrdenByUserID = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input("ID_pedido", sql.Int, req.params.ID_pedido)
+      .query(querysDetallesPedido.getItemsDetallesOrdenByUserID);
+    return res.json(result.recordset);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
 export const addNewDetallePedido = async (req, res) => {
-  const {
-    ID_pedido,
-    ID_producto,
-    cantidad,
-    precioUnitario,
-    operacion_id,
-    operacion_status,
-    operacion_status_detail,
-    operacion_description
-  } = req.body;
+  const { ID_pedido, ID_producto, cantidad, precioUnitario } = req.body;
+  console.log(req.body);
 
   if (
     ID_pedido == null ||
     ID_producto == null ||
     cantidad == null ||
-    precioUnitario == null ||
-    operacion_id == null ||
-    operacion_status == null ||
-    operacion_status_detail == null ||
-    operacion_description == null
+    precioUnitario == null
   ) {
     return res.status(400).json({ msg: 'Solicitud incorrecta. Por favor proporcione todos los campos requeridos' });
   }
@@ -47,12 +60,10 @@ export const addNewDetallePedido = async (req, res) => {
       .input("ID_producto", sql.Int, ID_producto)
       .input("cantidad", sql.Int, cantidad)
       .input("precioUnitario", sql.Decimal(10, 2), precioUnitario)
-      .input("operacion_id", sql.Int, operacion_id)
-      .input("operacion_status", sql.NVarChar(50), operacion_status)
-      .input("operacion_status_detail", sql.NVarChar(50), operacion_status_detail)
-      .input("operacion_description", sql.NVarChar(sql.MAX), operacion_description)
       .query(querysDetallesPedido.addNewDetallePedido);
-    console.log("addNewDetallePedido OK 200")
+
+    console.log("Detalle de pedido añadido correctamente OK 200")
+    // res.status(200).send("Detalle de pedido añadido correctamente");
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -64,21 +75,14 @@ export const updateDetallePedidoByID = async (req, res) => {
     ID_producto,
     cantidad,
     precioUnitario,
-    operacion_id,
-    operacion_status,
-    operacion_status_detail,
-    operacion_description
+    ID_detalle
   } = req.body;
 
   if (
     ID_pedido == null ||
     ID_producto == null ||
     cantidad == null ||
-    precioUnitario == null ||
-    operacion_id == null ||
-    operacion_status == null ||
-    operacion_status_detail == null ||
-    operacion_description == null
+    precioUnitario == null
   ) {
     return res.status(400).json({ msg: 'Solicitud incorrecta. Por favor proporcione todos los campos requeridos' });
   }
@@ -91,13 +95,9 @@ export const updateDetallePedidoByID = async (req, res) => {
       .input("ID_producto", sql.Int, ID_producto)
       .input("cantidad", sql.Int, cantidad)
       .input("precioUnitario", sql.Decimal(10, 2), precioUnitario)
-      .input("operacion_id", sql.Int, operacion_id)
-      .input("operacion_status", sql.NVarChar(50), operacion_status)
-      .input("operacion_status_detail", sql.NVarChar(50), operacion_status_detail)
-      .input("operacion_description", sql.NVarChar(sql.MAX), operacion_description)
-      .input("ID_detalle", req.params.id)
+      .input("ID_detalle", req.params.ID_detalle)
       .query(querysDetallesPedido.updateDetallePedidoByID);
-    console.log("updateDetallePedidoByID 200 OK")
+    res.status(200).send("Detalle de pedido actualizado correctamente");
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -108,7 +108,7 @@ export const deleteDetallePedidoByID = async (req, res) => {
     const pool = await getConnection();
     const result = await pool
       .request()
-      .input("ID_detalle", req.params.id)
+      .input("ID_detalle", req.params.ID_detalle)
       .query(querysDetallesPedido.deleteDetallePedidoByID);
     if (result.rowsAffected[0] === 0) return res.sendStatus(404);
     return res.sendStatus(204);

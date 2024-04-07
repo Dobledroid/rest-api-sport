@@ -1,7 +1,9 @@
 import { Router } from "express";
 import {
   createOrder,
+  createOrderMembresia,
   captureOrder,
+  captureOrderMembresia,
   cancelPayment,
 } from "../controllers/paypal.controller.js";
 
@@ -9,8 +11,12 @@ const router = Router();
 
 router.post("/paypal/create-order", createOrder);
 
-router.get("/paypal/capture-order", captureOrder);
+router.post("/paypal/create-order-membresia", createOrderMembresia);
 
-router.get("/paypal/cancel-order", cancelPayment);
+router.get("/capture-order", captureOrder);
+
+router.get("/capture-order-membresia", captureOrderMembresia);
+
+router.get("/cancel-order", cancelPayment);
 
 export default router;

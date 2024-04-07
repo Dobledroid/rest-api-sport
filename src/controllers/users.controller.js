@@ -3,6 +3,8 @@ import { addNewEstadoCuenta, getEstadoCuentaByUserId, updateIntentosFallidos, bl
 import { enviarCorreoBloqueado, enviarCorreoBloquear, enviarCorreoNuevoInicioSesion } from "../controllers/send.controlller";
 
 import bcrypt from 'bcrypt';
+const jwt = require('jsonwebtoken');
+
 const moment = require('moment-timezone');
 const axios = require('axios');
 
@@ -131,10 +133,9 @@ export const getTotalUsers = async (req, res) => {
 };
 
 export const updateUserById = async (req, res) => {
-  const { nombre, primerApellido, segundoApellido, fechaNacimiento, genero, correoElectronico, telefono, contrasena } = req.body;
-
-  if ((nombre == null || primerApellido == null || segundoApellido == null || fechaNacimiento == null || genero == null || correoElectronico == null || telefono == null || contrasena == null) ||
-    (nombre == '' || primerApellido == '' || segundoApellido == '' || fechaNacimiento == '' || genero == '' || correoElectronico == '' || telefono == null || contrasena == null )) {
+  const { nombre, primerApellido, segundoApellido, telefono, fechaNacimiento, genero } = req.body;
+  if ((nombre == null || primerApellido == null || segundoApellido == null || fechaNacimiento == null || genero == null || telefono == null) ||
+    (nombre == '' || primerApellido == '' || segundoApellido == '' || fechaNacimiento == '' || genero == '' || telefono == null)) {
     return res.status(400).json({ msg: "Solicitud incorrecta. Por favor complete todos los campos" });
   }
 
@@ -142,16 +143,15 @@ export const updateUserById = async (req, res) => {
     const pool = await getConnection();
     await pool
       .request()
-      .input("nombre", sql.VarChar, nombre)
-      .input("primerApellido", sql.VarChar, primerApellido)
-      .input("segundoApellido", sql.VarChar, segundoApellido)
+      .input("IdUsuario", sql.Int, req.params.id)
+      .input("nombre", sql.NVarChar, nombre)
+      .input("primerApellido", sql.NVarChar, primerApellido)
+      .input("segundoApellido", sql.NVarChar, segundoApellido)
       .input("fechaNacimiento", sql.Date, fechaNacimiento)
-      .input("genero", sql.VarChar, genero)
-      .input("correoElectronico", sql.VarChar, correoElectronico)
-      .input("telefono", sql.BigInt, telefono)
-      .input("contraseña", sql.VarChar, contrasena)
+      .input("genero", sql.NVarChar, genero)
+      .input("telefono", sql.NVarChar, telefono)
       .query(querysUsers.updateUserById);
-    res.json({ nombre, primerApellido, segundoApellido, fechaNacimiento, genero, correoElectronico, telefono, contrasena });
+    return res.status(200).json();
   } catch (error) {
     res.status(500);
     res.send(error.message);
@@ -180,6 +180,36 @@ export const updatePasswordById = async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 };
+
+export const validatePassword = async (req, res) => {
+  const { correo, passwordToValidate } = req.body;
+  // console.log(req.body)
+  try {
+    // Obtener la contraseña almacenada en la base de datos para el usuario dado
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input('correoElectronico', correo)
+      .query(querysUsers.getCredentialByEmail);
+
+    if (result.recordset.length === 0) {
+      throw new Error('Usuario no encontrado');
+    }
+
+    const hashedPassword = result.recordset[0].contraseña;
+
+    const isValidPassword = await bcrypt.compare(passwordToValidate, hashedPassword);
+    if (isValidPassword) {
+      res.status(200).json(true);
+    } else {
+      res.status(200).json(false);
+    }
+  } catch (error) {
+    console.error('Error al validar la contraseña:', error);
+    res.status(500).json(false);
+  }
+};
+
 
 export const login = async (req, res) => {
   const { correoElectronico, contraseña } = req.body;
@@ -220,7 +250,7 @@ export const login = async (req, res) => {
     const estadoCuentaResponse = await getEstadoCuentaByUserId(user.ID_usuario);
     const estadoCuenta = estadoCuentaResponse[0];
 
-    console.log("estadoCuenta", estadoCuenta)
+    // console.log("estadoCuenta", estadoCuenta)
     const hashedPassword = user.contraseña;
     const passwordMatch = await bcrypt.compare(contraseña, hashedPassword);
 
@@ -258,6 +288,7 @@ export const login = async (req, res) => {
     estadoCuenta.intentosFallidos = 0;
     await updateIntentosFallidos({ body: { ID_estadoCuenta: estadoCuenta.ID_estadoCuenta, intentosFallidos: estadoCuenta.intentosFallidos } });
     await enviarCorreoNuevoInicioSesion({ body: { email: user.correoElectronico } });
+    
     res.json(user);
   } catch (error) {
     res.status(500).json({ msg: "Error interno del servidor", error: error.message });

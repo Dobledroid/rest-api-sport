@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import passport from 'passport';
+// import './passport-config';
 
 import productRoutes from "./routes/products.routes";
 import usersRoutes from "./routes/users.routes";
@@ -43,6 +45,9 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
+
+// Inicializa Passport.js
+app.use(passport.initialize());
 
 // Manejo de la ruta raíz
 app.get("/", (req, res) => {

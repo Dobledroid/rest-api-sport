@@ -17,6 +17,23 @@ export const getMembresiaUsuarioByUserId = async (req, res) => {
   }
 };
 
+export const getMembresiaUsuarioByIDUnicoMembresia = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input("ID_UnicoMembresia", req.params.ID_UnicoMembresia)
+      .query(querysMembresiasUsuarios.getMembresiaUsuarioByIDUnicoMembresia);
+    
+      console.log(result.recordset)
+    const users = result.recordset;
+    
+    return res.status(200).json(users);
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+};
+
 export const getMembresiaUsuarioByUserIdAndType = async (userID, tipoMembresiaID) => {
   //  console.log("params_getMembresiaUsuarioByUserIdAndType", userID, tipoMembresiaID)
   try {
@@ -48,7 +65,7 @@ export const addNewMembresiaUsuario = async (req, res) => {
 
   try {
     const pool = await getConnection();
-    await pool
+    const result = await pool
       .request()
       .input("ID_usuario", sql.Int, ID_usuario)
       .input("ID_tipoMembresia", sql.Int, ID_tipoMembresia)
@@ -56,7 +73,11 @@ export const addNewMembresiaUsuario = async (req, res) => {
       .input("fechaVencimiento", sql.DateTime, fechaVencimientoFormateada)
       .input("imagenUrl", sql.VarChar, imagenUrl)
       .query(querysMembresiasUsuarios.addNewMembresiaUsuario);
-    console.log("response_addNewMembresiaUsuario OK 200")
+    
+    const insertedID = result.recordset[0].ID_membresiaUsuario;
+      
+    console.log("response_addNewMembresiaUsuario OK 200");
+    return insertedID;
   } catch (error) {
     res.status(500).send(error.message);
   }
@@ -103,5 +124,25 @@ export const updateMembresiaUsuarioById = async (req, res) => {
       // res.json({ ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento });
   } catch (error) {
     res.status(500).send(error.message);
+  }
+};
+
+export const existeUnaMembresiaUsuarioByID = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input('ID_membresiaUsuario', req.params.id)
+      .query(querysMembresiasUsuarios.existeUnaMembresiaUsuarioByID);
+
+    if (result.recordset.length > 0) {
+      const existeRegistro = result.recordset[0].existeRegistro === 1;
+      res.json({ existeRegistro });
+    } else {
+      res.json({ existeRegistro: false });
+    }
+  } catch (error) {
+    console.error('Error al verificar si existe un producto en el carrito:', error.message);
+    res.status(500).json({ error: 'Error al verificar la existencia del producto en el carrito' }); // Enviar error al cliente
   }
 };

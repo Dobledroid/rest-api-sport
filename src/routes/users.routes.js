@@ -1,3 +1,4 @@
+const passport = require('passport');
 import { Router } from "express";
 import {
   getUsers,
@@ -9,15 +10,18 @@ import {
   getUserByEmail,
   updatePasswordById,
   login,
+  validatePassword
 } from "../controllers/users.controller"; // Asegúrate de importar los controladores de usuarios
+import { authenticateJWT, authorizeAdmin } from '../middleware/authMiddleware';
+
 
 const router = Router();
 
-router.get("/users", getUsers);
+router.get("/users", authenticateJWT, getUsers);
 
-router.post("/users", createNewUser);
+router.post("/users", authenticateJWT, createNewUser);
 
-router.get("/users/count", getTotalUsers);
+router.get("/users/count", authenticateJWT, authorizeAdmin, getTotalUsers);
 
 router.get("/users/:id", getUserById);
 
@@ -25,10 +29,15 @@ router.get("/users/email/:email", getUserByEmail);
 
 router.post("/users/login", login);
 
-router.delete("/users/:id", deleteUserById);
+router.post("/users/validate-password/", authenticateJWT, validatePassword);
 
-router.put("/users/:id", updateUserById);
+router.delete("/users/:id", authenticateJWT, deleteUserById);
+
+router.put("/users/:id", authenticateJWT, updateUserById);
 
 router.put("/users/update-password/:id", updatePasswordById);
+
+
+
 
 export default router;

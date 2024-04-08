@@ -35,7 +35,7 @@ export const getProducts = async (req, res) => {
     const result = await request.query(query);
     res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 

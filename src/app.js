@@ -31,11 +31,13 @@ import detallesPedido from "./routes/detallesPedido.routes.js";
 import paypalRoutes from "./routes/paypal.routes.js";
 
 import morgan from "morgan";
-
+import helmet from 'helmet';
 import config from "./config";
 
 const app = express();
 
+app.use(helmet());
+app.use(morgan('combined'));
 // settings
 app.set("port", config.port);
 

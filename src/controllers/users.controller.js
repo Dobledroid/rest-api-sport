@@ -77,7 +77,7 @@ export const getUserById = async (req, res) => {
     return res.status(200).json(result.recordset[0]);
   } catch (error) {
     res.status(500);
-    res.send(error.message);
+    res.send(escapeHtml(error.message));
   }
 };
 

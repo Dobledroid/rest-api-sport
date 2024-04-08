@@ -10,8 +10,7 @@ export const handleFileUpload = async (req, res) => {
         });
         res.status(200).json(result);
     } catch (error) {
-        console.log('Error:', error);
-        res.status(400).send(error.message);
+        res.status(400).send(escapeHtml(error.message));
     }
 };
 

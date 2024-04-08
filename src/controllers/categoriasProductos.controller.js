@@ -6,7 +6,7 @@ export const getCategoriasProductos = async (req, res) => {
     const result = await pool.request().query(querysCategoriasProductos.getAllCategoriasProductos);
     res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -83,6 +83,6 @@ export const updateCategoriaProductoById = async (req, res) => {
       .query(querysCategoriasProductos.updateCategoriaProductoById);
     res.json({ nombre });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };

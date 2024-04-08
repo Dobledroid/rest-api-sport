@@ -10,7 +10,7 @@ export const getHistorialMembresiaByUserId = async (req, res) => {
       .query(querysHistorialMembresias.getHistorialMembresiaByUserId);
     return res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -56,7 +56,7 @@ export const addNewHistorialMembresia = async (req, res) => {
   const fechaInicioFormateada = moment(fechaInicio).subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
   const fechaVencimientoFormateada = moment(fechaVencimiento).subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
   
-  console.log(fechaInicioFormateada, fechaVencimientoFormateada)
+  // console.log(fechaInicioFormateada, fechaVencimientoFormateada)
   try {
     const pool = await getConnection();
     await pool

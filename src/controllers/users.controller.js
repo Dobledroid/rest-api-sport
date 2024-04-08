@@ -15,7 +15,7 @@ export const getUsers = async (req, res) => {
     res.json(result.recordset);
   } catch (error) {
     res.status(500);
-    res.send(error.message);
+    res.send(escapeHtml(error.message));
   }
 };
 
@@ -63,7 +63,7 @@ export const createNewUser = async (req, res) => {
     await addNewEstadoCuenta({ body: { ID_usuario: userId, estado, descripcion } });
     res.json({ msg: "Usuario creado exitosamente." });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -121,7 +121,7 @@ export const deleteUserById = async (req, res) => {
     return res.sendStatus(204);
   } catch (error) {
     res.status(500);
-    res.send(error.message);
+    res.send(escapeHtml(error.message));
   }
 };
 
@@ -154,7 +154,7 @@ export const updateUserById = async (req, res) => {
     return res.status(200).json();
   } catch (error) {
     res.status(500);
-    res.send(error.message);
+    res.send(escapeHtml(error.message));
   }
 };
 

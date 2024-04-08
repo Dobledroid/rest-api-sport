@@ -46,7 +46,7 @@ export const getListProductsWithImagen = async (req, res) => {
     res.json(result.recordset);
   } catch (error) {
     console.log("error", error)
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 export const getListProductsWithImagenPrincipal = async (req, res) => {
@@ -56,7 +56,7 @@ export const getListProductsWithImagenPrincipal = async (req, res) => {
     res.json(result.recordset);
   } catch (error) {
     console.log("error", error)
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -68,7 +68,7 @@ export const getAllProductsWithRelations = async (req, res) => {
     res.json(result.recordset);
   } catch (error) {
     console.log("error", error)
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -123,7 +123,7 @@ export const getProductById = async (req, res) => {
       .query(querys.getProductById);
     return res.json(result.recordset[0]);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -137,7 +137,7 @@ export const getProductByIdWithImagens = async (req, res) => {
     res.json(result.recordset);
   } catch (error) {
     console.log("error", error)
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -167,7 +167,7 @@ export const getTotalProducts = async (req, res) => {
 
     res.json(result.recordset[0][""]);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -196,7 +196,7 @@ export const updateProductById = async (req, res) => {
 
     res.json({ nombre, descripcion, ID_categoria, ID_subcategoria, ID_marca, precio, precioDescuento, existencias });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -236,6 +236,6 @@ export const updateItemQuantityByID_Orden = async (req, res) => {
     console.log("Existencia actualizada OK 200")
     // res.json({ msg: 'Cantidad de artículo actualizada correctamente' });11
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };

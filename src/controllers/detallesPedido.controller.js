@@ -9,7 +9,7 @@ export const getDetallesPedidosByIdUser = async (req, res) => {
       .query(querysDetallesPedido.getDetallesPedidosByIdUser);
     return res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -22,7 +22,7 @@ export const getDetallesPedidoByPedidoID = async (req, res) => {
       .query(querysDetallesPedido.getDetallesPedidoByPedidoID);
     return res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -35,7 +35,7 @@ export const getItemsDetallesOrdenByUserID = async (req, res) => {
       .query(querysDetallesPedido.getItemsDetallesOrdenByUserID);
     return res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -65,7 +65,7 @@ export const addNewDetallePedido = async (req, res) => {
     console.log("Detalle de pedido añadido correctamente OK 200")
     // res.status(200).send("Detalle de pedido añadido correctamente");
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -99,7 +99,7 @@ export const updateDetallePedidoByID = async (req, res) => {
       .query(querysDetallesPedido.updateDetallePedidoByID);
     res.status(200).send("Detalle de pedido actualizado correctamente");
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -113,6 +113,6 @@ export const deleteDetallePedidoByID = async (req, res) => {
     if (result.rowsAffected[0] === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };

@@ -13,7 +13,7 @@ export const getMembresiaUsuarioByUserId = async (req, res) => {
     
     return res.status(200).json(users); // Cambio aquí
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -30,7 +30,7 @@ export const getMembresiaUsuarioByIDUnicoMembresia = async (req, res) => {
     
     return res.status(200).json(users);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -79,7 +79,7 @@ export const addNewMembresiaUsuario = async (req, res) => {
     console.log("response_addNewMembresiaUsuario OK 200");
     return insertedID;
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -93,7 +93,7 @@ export const deleteMembresiaUsuarioById = async (req, res) => {
     if (result.rowsAffected[0] === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -123,7 +123,7 @@ export const updateMembresiaUsuarioById = async (req, res) => {
       console.log("response_updateMembresiaUsuarioById OK 200")
       // res.json({ ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 

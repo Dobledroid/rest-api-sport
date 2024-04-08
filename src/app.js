@@ -12,7 +12,6 @@ import TokenRoutes from "./routes/token.routes";
 import emailRoutes from "./routes/email.routes";
 import sendMethod from "./routes/send.routes";
 import estadoCuentaRoutes from "./routes/estadoCuenta.routes";
-import estadoUsuarioRoutes from "./routes/estadoUsuario.routes";
 import paymentRoutes from "./routes/payment.routes.js";
 import tiposMembresias from "./routes/tiposMembresias.routes.js";
 import membresiasUsuarios from "./routes/membresiasUsuarios.routes.js";

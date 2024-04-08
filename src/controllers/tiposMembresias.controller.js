@@ -16,7 +16,7 @@ export const addNewMembershipType = async (req, res) => {
       .query(querysTiposMembresillas.addNewMembershipType);
     res.json({ nombre, costo });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -29,7 +29,7 @@ export const getMembershipTypeById = async (req, res) => {
       .query(querysTiposMembresillas.getMembershipTypeById);
     return res.json(result.recordset[0]);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -42,7 +42,7 @@ export const getMembresiaIdUnico = async (req, res) => {
       .query(querysTiposMembresillas.getMembresillaIdUnico);
     return res.json(result.recordset[0]);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -54,7 +54,7 @@ export const getAllMembershipTypes = async (req, res) => {
       .query(querysTiposMembresillas.getAllMembershipTypes);
     return res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -68,7 +68,7 @@ export const deleteMembershipTypeById = async (req, res) => {
     if (result.rowsAffected[0] === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -89,6 +89,6 @@ export const updateMembershipTypeById = async (req, res) => {
       .query(querysTiposMembresillas.updateMembershipTypeById);
     res.json({ nombre, costo });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };

@@ -1,10 +1,10 @@
 import passport from 'passport';
 import { Strategy, ExtractJwt } from 'passport-jwt';
 import { dbSettings } from './database/connection';
-
+require('dotenv').config();
 const options = {
   jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-  secretOrKey: 'aaa20989a093bec2e1a3d13c3b1fbd9bbcd2f9df158da4ff32447ef69162cac3322a3a6342ce7ad51b8eb9b8c756d7f2c0c4b9bfca5c40d165f36d472eb6e285',
+  secretOrKey: process.env.SECRECT_JWT,
 };
 
 passport.use(new Strategy(options, async (jwt_payload, done) => {

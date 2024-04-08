@@ -24,7 +24,7 @@ export const getTodasHistorialMembresiasByUsuarioID = async (req, res) => {
       .query(querysHistorialMembresias.getTodasHistorialMembresiasByUsuarioID);
     return res.json(result.recordset);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -74,7 +74,7 @@ export const addNewHistorialMembresia = async (req, res) => {
     // res.sendStatus(200);
   } catch (error) {
     console.log(error);
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -121,7 +121,7 @@ export const deleteHistorialMembresiaById = async (req, res) => {
     if (result.rowsAffected[0] === 0) return res.sendStatus(404);
     return res.sendStatus(204);
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };
 
@@ -146,6 +146,6 @@ export const updateHistorialMembresiaById = async (req, res) => {
     console.log("updateHistorialMembresiaById 200 OK")
       // res.json({ ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento, precio });
   } catch (error) {
-    res.status(500).send(error.message);
+    res.status(500).send(escapeHtml(error.message));
   }
 };

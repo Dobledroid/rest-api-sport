@@ -7,7 +7,7 @@ export const getPreguntas = async (req, res) => {
       res.json(result.recordset);
     } catch (error) {
       res.status(500);
-      res.send(error.message);
+      res.send(escapeHtml(error.message));
     }
   };
   

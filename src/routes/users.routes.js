@@ -10,7 +10,9 @@ import {
   getUserByEmail,
   updatePasswordById,
   login,
-  validatePassword
+  validatePassword,
+  getUserByEmailOAuth,
+  createNewUserOAuth
 } from "../controllers/users.controller"; // Asegúrate de importar los controladores de usuarios
 import { authenticateJWT, authorizeAdmin } from '../middleware/authMiddleware';
 
@@ -19,13 +21,15 @@ const router = Router();
 
 router.get("/users", authenticateJWT, getUsers);
 
-router.post("/users", authenticateJWT, createNewUser);
+router.post("/users", createNewUser);
+router.post("/users-oauth", createNewUserOAuth);
 
 router.get("/users/count", authenticateJWT, authorizeAdmin, getTotalUsers);
 
 router.get("/users/:id", getUserById);
 
 router.get("/users/email/:email", getUserByEmail);
+router.get("/users/email-oauth/:email", getUserByEmailOAuth);
 
 router.post("/users/login", login);
 

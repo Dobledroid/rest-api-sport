@@ -11,7 +11,7 @@ import { addNewOrdenPedido } from "./ordenesPedidos.controller.js"
 import { addNewDetallePedido } from "./detallesPedido.controller.js"
 import { getItemsOrderByUserID, deleteItemsByUserID } from "./carritoCompras.controller.js"
 
-import { addNewMembresiaUsuario } from "./membresiasUsuarios.controller.js"
+import { addNewMembresiaUsuario, updateMembresiaUsuarioByIdActualizar} from "./membresiasUsuarios.controller.js"
 import { addNewHistorialMembresia } from "./historialMembresias.controller.js"
 import { crearQRMembresia } from "./QR.controller.js"
 
@@ -116,7 +116,7 @@ export const captureOrder = async (req, res) => {
       }
     );
 
-    console.log("CAPTURE ORDER", response.data);
+    // console.log("CAPTURE ORDER", response.data);
 
     if (response.data.status === 'COMPLETED') {
       const datosCompra = userData.getUserData();
@@ -191,8 +191,8 @@ export const captureOrder = async (req, res) => {
 };
 
 export const createOrderMembresia = async (req, res) => {
-  const { ID_usuario, total, currentURL, nombre, tipoMembresiaID, correo } = req.body;
-  membresiaData.setUserData(ID_usuario, total, currentURL, tipoMembresiaID, correo);
+  const { ID_usuario, total, currentURL, nombre, tipoMembresiaID, correo, ID_UnicoMembresia } = req.body;
+  membresiaData.setUserData(ID_usuario, total, currentURL, tipoMembresiaID, correo, ID_UnicoMembresia);
   try {
     const order = {
       intent: "CAPTURE",
@@ -200,15 +200,15 @@ export const createOrderMembresia = async (req, res) => {
         {
           amount: {
             currency_code: "MXN",
-            value: "170",
+            value: total,
             breakdown: {
-              item_total: { currency_code: "MXN", value: "170" },
+              item_total: { currency_code: "MXN", value: total },
             }
           },
           items: [
             {
               name: nombre,
-              unit_amount: { currency_code: "MXN", value: "170" },
+              unit_amount: { currency_code: "MXN", value: total },
               quantity: 1,
             }
           ]
@@ -285,8 +285,10 @@ export const captureOrderMembresia = async (req, res) => {
 
     if (response.data.status === 'COMPLETED') {
       const datosCompra = membresiaData.getUserData();
+
+
       const fechaHoraActual = await obtenerFechaHoraActual();
-      const fechaVencimiento = await calcularFechaVencimiento();
+      const fechaVencimiento = await calcularFechaVencimiento(datosCompra.ID_UnicoMembresia);
 
       const responseCrearQRMembresiaImagenUrl = await crearQRMembresia({
         body: {
@@ -320,7 +322,7 @@ export const captureOrderMembresia = async (req, res) => {
             operacion_status: response.data.status
           }
         });
-        console.log(responseHistorialMembresia)
+        // console.log("responseHistorialMembresia", responseHistorialMembresia)
         // console.log("Detalles de pedido añadidos correctamente");
         // res.status(200).json({ msg: "Detalles de pedido añadidos correctamente" });
       } catch (error) {
@@ -329,9 +331,160 @@ export const captureOrderMembresia = async (req, res) => {
       }
 
       const parametros = `/${ID_membresiaUsuario}/2`;
+      // const parametros = `/1/2`;
       const nuevaURL = datosCompra.currentURL + "/compra-finalizada" + parametros;
 
-      console.log(nuevaURL);
+      console.log("nuevaURL", nuevaURL);
+      res.redirect(nuevaURL);
+    } else {
+      res.status(400).json({ message: "La orden no se completó correctamente" });
+    }
+  } catch (error) {
+    console.log(error.message);
+    return res.status(500).json({ message: "Internal Server error" });
+  }
+};
+
+export const createOrderMembresiaActualizar = async (req, res) => {
+  const { ID_membresiaUsuario, ID_usuario, total, currentURL, nombre, tipoMembresiaID, correo, ID_UnicoMembresia, fechaVencimiento } = req.body;
+  membresiaData.setUserData(ID_usuario, total, currentURL, tipoMembresiaID, correo, ID_UnicoMembresia, fechaVencimiento, ID_membresiaUsuario);
+  try {
+    const order = {
+      intent: "CAPTURE",
+      purchase_units: [
+        {
+          amount: {
+            currency_code: "MXN",
+            value: total,
+            breakdown: {
+              item_total: { currency_code: "MXN", value: total },
+            }
+          },
+          items: [
+            {
+              name: nombre,
+              unit_amount: { currency_code: "MXN", value: total },
+              quantity: 1,
+            }
+          ]
+        }
+      ],
+      application_context: {
+        brand_name: "mycompany.com",
+        landing_page: "NO_PREFERENCE",
+        user_action: "PAY_NOW",
+        return_url: `${HOST}/api/capture-order-membresia-actualizar`,
+        cancel_url: `${HOST}/api/cancel-payment`,
+      },
+    };
+
+    // format the body
+    const params = new URLSearchParams();
+    params.append("grant_type", "client_credentials");
+
+    // Generate an access token
+    const {
+      data: { access_token },
+    } = await axios.post(
+      "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+      params,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        auth: {
+          username: PAYPAL_API_CLIENT,
+          password: PAYPAL_API_SECRET,
+        },
+      }
+    );
+
+    // console.log(access_token);
+
+    // make a request
+    const response = await axios.post(
+      `${PAYPAL_API}/v2/checkout/orders`,
+      order,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
+
+    // console.log(response.data);
+
+    return res.json(response.data);
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json("Something goes wrong");
+  }
+};
+export const captureOrderMembresiaActualizar = async (req, res) => {
+  const { token } = req.query;
+
+  try {
+    const response = await axios.post(
+      `${PAYPAL_API}/v2/checkout/orders/${token}/capture`,
+      {},
+      {
+        auth: {
+          username: PAYPAL_API_CLIENT,
+          password: PAYPAL_API_SECRET,
+        },
+      }
+    );
+
+    // console.log("CAPTURE ORDER", response.data);
+
+    if (response.data.status === 'COMPLETED') {
+      const datosCompra = membresiaData.getUserData();
+
+      const fechaHoraActual = await obtenerFechaHoraActual();
+
+      const responseCrearQRMembresiaImagenUrl = await crearQRMembresia({
+        body: {
+          ID_usuario: datosCompra.userID,
+          fechaInicio: fechaHoraActual,
+          fechaVencimiento: datosCompra.fechaVencimiento,
+          ID_tipoMembresia: datosCompra.tipoMembresiaID,
+          email: datosCompra.correo
+        }
+      });
+
+      await updateMembresiaUsuarioByIdActualizar({
+        body: {
+          ID_membresiaUsuario: datosCompra.ID_membresiaUsuario,
+          ID_usuario: datosCompra.userID,
+          ID_tipoMembresia: datosCompra.tipoMembresiaID,
+          fechaInicio: fechaHoraActual,
+          fechaVencimiento: datosCompra.fechaVencimiento,
+          imagenUrl: responseCrearQRMembresiaImagenUrl
+        }
+      });
+
+      try {
+        const responseHistorialMembresia = await addNewHistorialMembresia({
+          body: {
+            ID_usuario: datosCompra.userID,
+            ID_tipoMembresia: datosCompra.tipoMembresiaID,
+            fechaInicio: fechaHoraActual,
+            fechaVencimiento: datosCompra.fechaVencimiento,
+            precio: datosCompra.total,
+            operacion_id: response.data.id,
+            operacion_status: response.data.status
+          }
+        });
+      } catch (error) {
+        console.error("Error al agregar la historial de la membresia", error.message);
+        res.status(500).json({ msg: "Error al agregar  la historial de la membresia" });
+      }
+
+      const parametros = `/${datosCompra.ID_membresiaUsuario}/2`;
+      // const parametros = `/1/2`;
+      const nuevaURL = datosCompra.currentURL + "/compra-finalizada" + parametros;
+
+      // console.log("nuevaURL", nuevaURL);
       res.redirect(nuevaURL);
     } else {
       res.status(400).json({ message: "La orden no se completó correctamente" });

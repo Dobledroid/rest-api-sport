@@ -2,6 +2,9 @@ import { getConnection, querysUsers, sql } from "../database";
 import { addNewEstadoCuenta, getEstadoCuentaByUserId, updateIntentosFallidos, bloquearCuenta, desbloquearCuenta } from "../controllers/estadoCuenta.controller";
 import { enviarCorreoBloqueado, enviarCorreoBloquear, enviarCorreoNuevoInicioSesion } from "../controllers/send.controlller";
 
+import { addNewLogBloqueoInicioSesion } from "../controllers/logsBloqueoInicioSesion.controller";
+
+
 import bcrypt from 'bcrypt';
 const jwt = require('jsonwebtoken');
 
@@ -67,6 +70,48 @@ export const createNewUser = async (req, res) => {
   }
 };
 
+export const createNewUserOAuth = async (req, res) => {
+  const { nombre, correoElectronico } = req.body;
+  if (!nombre || !correoElectronico) {
+    return res.status(400).json({ msg: "Por favor complete todos los campos." });
+  }
+
+  try {
+    const pool = await getConnection();
+
+    const existingUser = await pool
+      .request()
+      .input("correoElectronico", sql.VarChar, correoElectronico)
+      .query(querysUsers.getCredentialByEmail);
+
+    if (existingUser.recordset.length > 0) {
+      return res.status(409).json({ msg: "El correo electrónico ya está registrado." });
+    }
+
+    const result = await pool
+      .request()
+      .input("nombre", sql.VarChar, nombre)
+      .query(querysUsers.addNewUserOAuth);
+
+    const userId = result.recordset[0].ID_usuario;
+    console.log("userId", userId)
+
+    await pool
+      .request()
+      .input("ID_usuario", sql.Int, userId)
+      .input("correoElectronico", sql.VarChar, correoElectronico)
+      .query(querysUsers.addNewCredentialOAuth);
+
+    const estado = 1;
+    const descripcion = "Activo";
+    await addNewEstadoCuenta({ body: { ID_usuario: userId, estado, descripcion } });
+    res.status(200).json({ msg: "Usuario creado exitosamente." });
+
+  } catch (error) {
+    res.status(500).json({ msg: 'Error interno del servidor', error: error.message });
+  }
+};
+
 export const getUserById = async (req, res) => {
   try {
     const pool = await getConnection();
@@ -106,6 +151,34 @@ export const getUserByEmail = async (req, res) => {
     res.status(500).json({ msg: 'Error interno del servidor' });
   }
 };
+
+
+export const getUserByEmailOAuth = async (req, res) => {
+  const { email } = req.params;
+
+  if (email == null || email === '') {
+    return res.status(400).json({ msg: 'Solicitud incorrecta. Proporcione un correo electrónico' });
+  }
+
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input('correoElectronico', sql.VarChar, email)
+      .query(querysUsers.getUserByEmailOAuth);
+
+    if (result.recordset.length === 0) {
+      return res.status(200).json({ existe: false, usuario: null });
+    }
+
+    const user = result.recordset[0];
+    return res.status(200).json({ existe: true, usuario: user });
+
+  } catch (error) {
+    res.status(500).json({ msg: 'Error interno del servidor' });
+  }
+};
+
 
 export const deleteUserById = async (req, res) => {
   try {
@@ -268,8 +341,9 @@ export const login = async (req, res) => {
         // Enviar correo electrónico sobre el bloqueo de la cuenta
         const estadoCuentaBloqueadaResponse = await getEstadoCuentaByUserId(user.ID_usuario);
         const estadoCuentaBloqueada = estadoCuentaBloqueadaResponse[0];
-        
-        
+
+        await addNewLogBloqueoInicioSesion({ body: { CorreoElectronico: user.correoElectronico } })
+
         await enviarCorreoBloqueado({ body: { tiempoBloqueo: estadoCuentaBloqueada.tiempoDesbloqueo, email: user.correoElectronico } });
         return res.status(401).json({ msg: `La cuenta está bloqueada debido a múltiples intentos fallidos de inicio de sesión. Debes esperar ${tiempoBloqueoMinutos} minutos.` });
       }
@@ -288,7 +362,7 @@ export const login = async (req, res) => {
     estadoCuenta.intentosFallidos = 0;
     await updateIntentosFallidos({ body: { ID_estadoCuenta: estadoCuenta.ID_estadoCuenta, intentosFallidos: estadoCuenta.intentosFallidos } });
     await enviarCorreoNuevoInicioSesion({ body: { email: user.correoElectronico } });
-    
+
     res.json(user);
   } catch (error) {
     res.status(500).json({ msg: "Error interno del servidor", error: error.message });

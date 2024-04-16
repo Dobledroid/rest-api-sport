@@ -28,6 +28,19 @@ export const getTodasHistorialMembresiasByUsuarioID = async (req, res) => {
   }
 };
 
+export const getItemDetalleIdMembresia = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input("ID_membresiaUsuario", sql.Int, req.params.id)
+      .query(querysDetallesPedido.getItemsDetallesOrdenByUserID);
+    return res.json(result.recordset);
+  } catch (error) {
+    res.status(500).send(escapeHtml(error.message));
+  }
+};
+
 
 export const addNewHistorialMembresia = async (req, res) => {
   console.log("addNewHistorialMembresia", req.body)

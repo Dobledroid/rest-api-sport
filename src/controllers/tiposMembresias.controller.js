@@ -1,9 +1,8 @@
 import { getConnection, sql, querysTiposMembresillas } from "../database";
 
 export const addNewMembershipType = async (req, res) => {
-  const { nombre, costo } = req.body;
-
-  if (nombre == null || nombre === '' || costo == null || isNaN(costo)) {
+  const { nombre, costo, ID_UnicoMembresia } = req.body;
+  if (nombre == null || nombre === '' || costo == null || isNaN(costo) || ID_UnicoMembresia === '' || ID_UnicoMembresia == null) {
     return res.status(400).json({ msg: 'Bad Request. Please provide a name and valid cost for the membership type' });
   }
 
@@ -13,6 +12,7 @@ export const addNewMembershipType = async (req, res) => {
       .request()
       .input("nombre", sql.NVarChar, nombre)
       .input("costo", sql.Decimal(10, 2), costo)
+      .input("ID_UnicoMembresia", sql.NVarChar, ID_UnicoMembresia)
       .query(querysTiposMembresillas.addNewMembershipType);
     res.json({ nombre, costo });
   } catch (error) {
@@ -66,15 +66,14 @@ export const deleteMembershipTypeById = async (req, res) => {
       .input("ID_tipoMembresia", req.params.id)
       .query(querysTiposMembresillas.deleteMembershipTypeById);
     if (result.rowsAffected[0] === 0) return res.sendStatus(404);
-    return res.sendStatus(204);
+    res.sendStatus(200);
   } catch (error) {
     res.status(500).send(escapeHtml(error.message));
   }
 };
 
 export const updateMembershipTypeById = async (req, res) => {
-  const { nombre, costo } = req.body;
-
+  const { nombre, costo, ID_UnicoMembresia } = req.body;
   if (nombre == null || nombre === '' || costo == null || isNaN(costo)) {
     return res.status(400).json({ msg: 'Bad Request. Please provide a name and valid cost for the membership type' });
   }
@@ -85,9 +84,10 @@ export const updateMembershipTypeById = async (req, res) => {
       .request()
       .input("nombre", sql.NVarChar, nombre)
       .input("costo", sql.Decimal(10, 2), costo)
+      .input("ID_UnicoMembresia", sql.NVarChar, ID_UnicoMembresia)
       .input("ID_tipoMembresia", req.params.id)
       .query(querysTiposMembresillas.updateMembershipTypeById);
-    res.json({ nombre, costo });
+    return res.sendStatus(200);
   } catch (error) {
     res.status(500).send(escapeHtml(error.message));
   }

@@ -47,15 +47,6 @@ export const sumarHoras = async (horas) => {
   }
 };
 
-export const sumarDias = async (dias) => {
-  try {
-    const fechaActual = await obtenerFechaHoraActual();
-    const nuevaFecha = moment(fechaActual).add(dias, 'days').format();
-    return nuevaFecha;
-  } catch (error) {
-    throw new Error('No se pudo sumar los días a la fecha actual');
-  }
-};
 
 export const calcularMes = async () => {
   try {
@@ -76,11 +67,41 @@ export const sumarMeses = async (meses) => {
   }
 };
 
-export const calcularFechaVencimiento = async () => {
+
+export const sumarDias = async (dias) => {
   try {
-    const fechaVencimiento = await sumarMeses(1);
-    return fechaVencimiento;
+    const fechaActual = await obtenerFechaHoraActual();
+    const nuevaFecha = moment(fechaActual).add(dias, 'days').format();
+    return nuevaFecha;
+  } catch (error) {
+    throw new Error('No se pudo sumar los días a la fecha actual');
+  }
+};
+
+
+export const calcularFechaVencimiento = async (tipoMembresiaID) => {
+  console.log("tipoMembresiaID", tipoMembresiaID)
+  try {
+    switch (tipoMembresiaID) {
+      case 'Membresia30D':
+        return await sumarMeses(1);
+      case 'Membresia15D':
+        return await sumarDias(15);
+      case 'Membresia1D':
+        return await sumarDias(1);
+      default:
+        throw new Error('Tipo de membresía desconocido');
+    }
   } catch (error) {
     throw new Error('No se pudo calcular la fecha de vencimiento de la membresía');
   }
 };
+
+// export const calcularFechaVencimiento = async () => {
+//   try {
+//     const fechaVencimiento = await sumarMeses(1);
+//     return fechaVencimiento;
+//   } catch (error) {
+//     throw new Error('No se pudo calcular la fecha de vencimiento de la membresía');
+//   }
+// };

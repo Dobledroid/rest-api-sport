@@ -61,6 +61,18 @@ export const getListProductsWithImagenPrincipal = async (req, res) => {
 };
 
 
+export const getListProductsWithImagenPrincipalAdmin = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query(querys.getListProductsWithImagenPrincipalAdmin);
+    res.json(result.recordset);
+  } catch (error) {
+    console.log("error", error)
+    res.status(500).send(escapeHtml(error.message));
+  }
+};
+
+
 export const getAllProductsWithRelations = async (req, res) => {
   try {
     const pool = await getConnection();

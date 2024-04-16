@@ -1,6 +1,18 @@
 import moment from 'moment-timezone';
 import { getConnection, querysMembresiasUsuarios, sql } from "../database";
 
+
+export const getAllMembresiaUsuarios = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool.request().query(querysMembresiasUsuarios.getAllMembresiasUsers);
+    res.json(result.recordset);
+  } catch (error) {
+    res.status(500);
+    res.send(escapeHtml(error.message));
+  }
+};
+
 export const getMembresiaUsuarioByUserId = async (req, res) => {
   try {
     const pool = await getConnection();
@@ -127,6 +139,39 @@ export const updateMembresiaUsuarioById = async (req, res) => {
   }
 };
 
+export const updateMembresiaUsuarioByIdActualizar = async (req, res) => {
+  // console.log("paramets_updateMembresiaUsuarioById", req.body)
+
+  const { ID_membresiaUsuario, ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento, imagenUrl } = req.body;
+
+  console.log(req.body);
+
+  if (ID_membresiaUsuario == null, ID_usuario == null || ID_tipoMembresia == null || fechaInicio == null || fechaVencimiento == null || imagenUrl == null) {
+    return res.status(400).json({ msg: 'Bad Request. Please provide all required fields' });
+  }
+
+  const fechaInicioFormateada = moment(fechaInicio).subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
+  const fechaVencimientoFormateada = moment(fechaVencimiento).subtract(6, 'hours').format('YYYY-MM-DD HH:mm:ss');
+  console.log("fechaInicioFormateada", fechaInicioFormateada)
+  console.log("fechaVencimientoFormateada", fechaVencimientoFormateada)
+  try {
+    const pool = await getConnection();
+    await pool
+      .request()
+      .input("ID_usuario", sql.Int, ID_usuario)
+      .input("ID_tipoMembresia", sql.Int, ID_tipoMembresia)
+      .input("fechaInicio", sql.DateTime, fechaInicioFormateada)
+      .input("fechaVencimiento", sql.DateTime, fechaVencimientoFormateada)
+      .input("imagenUrl", sql.VarChar, imagenUrl)
+      .input("ID_membresiaUsuario", sql.Int, ID_membresiaUsuario)
+      .query(querysMembresiasUsuarios.updateMembresiaUsuarioById);
+      console.log("updateMembresiaUsuarioByIdActualizar OK 200")
+      // res.json({ ID_usuario, ID_tipoMembresia, fechaInicio, fechaVencimiento });
+  } catch (error) {
+    res.status(500).send(escapeHtml(error.message));
+  }
+};
+
 export const existeUnaMembresiaUsuarioByID = async (req, res) => {
   try {
     const pool = await getConnection();
@@ -141,6 +186,26 @@ export const existeUnaMembresiaUsuarioByID = async (req, res) => {
     } else {
       res.json({ existeRegistro: false });
     }
+  } catch (error) {
+    console.error('Error al verificar si existe un producto en el carrito:', error.message);
+    res.status(500).json({ error: 'Error al verificar la existencia del producto en el carrito' }); // Enviar error al cliente
+  }
+};
+
+
+export const existeUnaMembresiaUsuarioByIDMembresiaTodo = async (req, res) => {
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input('ID_membresiaUsuario', req.params.id)
+      .query(querysMembresiasUsuarios.existeUnaMembresiaUsuarioByIDMembresiaTodo);
+
+      if (result.recordset.length > 0) {
+        res.json(result.recordset);
+      } else {
+        res.status(404).json({ m: 'No se encontro' });
+      }
   } catch (error) {
     console.error('Error al verificar si existe un producto en el carrito:', error.message);
     res.status(500).json({ error: 'Error al verificar la existencia del producto en el carrito' }); // Enviar error al cliente

@@ -16,3 +16,10 @@ export { querysPregunta } from "./querys";
 export { querysDireccionEnvioPredeterminada } from "./querys";
 export { querysOrdenesPedidos } from "./querys";
 export { querysDetallesPedido } from "./querys";
+
+
+export { querysLogsInicioSesion } from "./querys";
+export { querysLogsBloqueoInicioSesion } from "./querys";
+export { querysLogsInicioSesionOAuth } from "./querys";
+export { querysLogsActualizacionDatosSensibles } from "./querys";
+

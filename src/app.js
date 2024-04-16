@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import passport from 'passport';
 // import './passport-config';
+import requestIp from 'request-ip';
 
 import productRoutes from "./routes/products.routes";
 import usersRoutes from "./routes/users.routes";
@@ -27,6 +28,12 @@ import preguntaRoutes from "./routes/pregunta.routes.js";
 import ordenesPedidos from "./routes/ordenesPedidos.routes.js";
 import detallesPedido from "./routes/detallesPedido.routes.js";
 
+// LOGS
+import logsActualizacionDatosSensibles from "./routes/logsActualizacionDatosSensibles.routes.js";
+import logsBloqueoInicioSesion from "./routes/logsBloqueoInicioSesion.routes.js";
+import logsInicioSesion from "./routes/logsInicioSesion.routes.js";
+import logsInicioSesionOAuth from "./routes/logsInicioSesionOAuth.routes.js";
+
 //PAGOS
 import paypalRoutes from "./routes/paypal.routes.js";
 
@@ -39,7 +46,7 @@ import config from "./config";
 const app = express();
 
 app.use(helmet());
-app.use(morgan('combined'));
+// app.use(morgan('combined'));
 // settings
 app.set("port", config.port);
 
@@ -56,6 +63,13 @@ app.use(passport.initialize());
 app.get("/", (req, res) => {
   res.send("¡Hola, este es mi servidor API!");
 });
+// app.set('trust proxy', true);
+
+// app.get('/', (req, res) => {
+//   const clientIp = requestIp.getClientIp(req);
+//   console.log("IP del cliente:", clientIp);
+//   res.send('Hello World');
+// });
 
 app.get("/api", (req, res) => {
   res.send("¡APIw!");
@@ -92,5 +106,11 @@ app.use("/api", ordenesPedidos);
 app.use("/api", detallesPedido);
 
 app.use("/api", paypalRoutes);
+
+// logs
+app.use("/api", logsActualizacionDatosSensibles);
+app.use("/api", logsBloqueoInicioSesion);
+app.use("/api", logsInicioSesion);
+app.use("/api", logsInicioSesionOAuth);
 
 export { app };

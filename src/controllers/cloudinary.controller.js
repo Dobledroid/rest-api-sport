@@ -1,5 +1,6 @@
 
 const cloudinary = require("cloudinary").v2;
+import fs from 'fs';
 export const handleFileUpload = async (req, res) => {
     // console.log("req", req.file)
     try {
@@ -15,7 +16,7 @@ export const handleFileUpload = async (req, res) => {
 };
 
 export const subirImagenQR = async (data, fechaInicio) => {
-    
+
     try {
         // Extraer los datos del archivo y del cuerpo de la solicitud
         const { file } = data;
@@ -35,6 +36,29 @@ export const subirImagenQR = async (data, fechaInicio) => {
         throw new Error('Error al subir el archivo a Cloudinary');
     }
 };
+
+// Función para subir imágenes a Cloudinary
+export const subirImagenesProducto = async (files, fechaInicio) => {
+    try {
+      const urls = [];
+      for (const file of files) {
+        const filePath = file.path;
+        const publicId = `Producto_${fechaInicio}_${file.originalname}`;
+        const result = await cloudinary.uploader.upload(filePath, {
+          folder: 'Productos',
+          public_id: publicId,
+        });
+        urls.push(result.secure_url);
+        fs.unlinkSync(filePath); // Elimina el archivo después de subirlo
+      }
+      
+      return urls;
+    } catch (error) {
+      console.error('Error al subir los archivos a Cloudinary:', error);
+      throw new Error('Error al subir los archivos a Cloudinary');
+    }
+  };
+
 
 export const handleFileUploadProduct = async (req, res) => {
     try {

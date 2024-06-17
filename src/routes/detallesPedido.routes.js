@@ -10,7 +10,7 @@ import {
 
 const router = Router();
 
-router.get("/detalles-pedido/:ID_usuario", getDetallesPedidosByIdUser);
+router.get("/detalles-pedido-usuario/:ID_usuario", getDetallesPedidosByIdUser);
 router.get("/detalles-pedido/:id", getDetallesPedidoByPedidoID);
 router.get("/detalles-pedido-items/:ID_pedido", getItemsDetallesOrdenByUserID);
 router.post("/detalles-pedido", addNewDetallePedido);

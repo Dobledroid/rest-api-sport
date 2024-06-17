@@ -21,7 +21,7 @@ export const querys = {
   SELECT P.*, IP.imagenUrl, M.nombre AS 'Marca', CP.nombre AS 'Categoria', SP.nombre AS 'Subcategoria',
             ROW_NUMBER() OVER (PARTITION BY P.ID_producto ORDER BY IP.ID_imagen) AS rn
       FROM Productos P
-    INNER JOIN ImagenesProducto IP ON P.ID_producto = IP.ID_producto
+    LEFT JOIN ImagenesProducto IP ON P.ID_producto = IP.ID_producto
     INNER JOIN Marcas M ON P.ID_marca = M.ID_marca
     INNER JOIN CategoriasProductos CP ON P.ID_categoria = CP.ID_categoria
     INNER JOIN SubcategoriasProductos SP ON P.ID_subcategoria = SP.ID_subcategoria
@@ -33,10 +33,14 @@ export const querys = {
   FROM Productos
   JOIN ImagenesProducto ON Productos.ID_producto = ImagenesProducto.ID_producto
   WHERE Productos.ID_producto = @ID_producto;`,
-  addNewProduct: "INSERT INTO Productos (nombre, descripcion, precio, precioDescuento, ID_categoria, ID_subcategoria, ID_marca) VALUES (@nombre, @descripcion, @precio, @precioDescuento, @ID_categoria, @ID_subcategoria, @ID_marca)",
+  addNewProduct:  `
+  INSERT INTO Productos (nombre, descripcion, precio, descuento, precioFinal, existencias, ID_categoria, ID_subcategoria, ID_marca) 
+  OUTPUT INSERTED.ID_producto
+  VALUES (@nombre, @descripcion, @precioBase, @descuentoPorcentaje, @precioFinal, @cantidadExistencias, @ID_categoria, @ID_subcategoria, @ID_marca);
+`,
   deleteProduct: "DELETE FROM Productos WHERE ID_producto = @IdProducto",
   getTotalProducts: "SELECT COUNT(*) FROM Productos",
-  updateProductById: "UPDATE Productos SET nombre = @nombre, descripcion = @descripcion, precio = @precio, precioDescuento = @precioDescuento, ID_categoria = @ID_categoria, ID_subcategoria = @ID_subcategoria, ID_marca = @ID_marca WHERE ID_producto = @IdProducto",
+  updateProductById: "UPDATE Productos SET nombre = @nombre, descripcion = @descripcion, precio = @precio, descuento = @descuento, precioFinal = @precioFinal, existencias = @existencias, ID_categoria = @ID_categoria, ID_subcategoria = @ID_subcategoria, ID_marca = @ID_marca WHERE ID_producto = @IdProducto",
   getAllProductsWithRelations: `
   SELECT 
   P.ID_producto,
@@ -302,9 +306,9 @@ export const querysPregunta = {
 export const querysOrdenesPedidos = {
   addNewOrdenPedido: `
   DECLARE @InsertedID TABLE (ID_pedido INT);
-  INSERT INTO OrdenesPedidos (ID_usuario, fecha, total, operacion_id, operacion_status)
+  INSERT INTO OrdenesPedidos (ID_usuario, fecha, total, operacion_id, operacion_status, ID_direccion)
 OUTPUT INSERTED.ID_pedido INTO @InsertedID
-VALUES (@ID_usuario, @fecha, @total, @operacion_id, @operacion_status);
+VALUES (@ID_usuario, @fecha, @total, @operacion_id, @operacion_status, @ID_direccion);
 
 SELECT ID_pedido FROM @InsertedID;
   `,
@@ -312,7 +316,15 @@ SELECT ID_pedido FROM @InsertedID;
   getOrdenPedidoByID: "SELECT * FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido;",
   updateOrdenPedidoByID: "UPDATE OrdenesPedidos SET ID_usuario = @ID_usuario, fecha = @fecha, estado = @estado, total = @total, operacion_id = @operacion_id, operacion_status = @operacion_status WHERE ID_pedido = @ID_pedido;",
   deleteOrdenPedidoByID: "DELETE FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido;",
-  existeUnOrdenPedidoByID: "SELECT TOP 1 ID_pedido, COUNT(*) AS existeRegistro FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido GROUP BY ID_pedido;"
+  existeUnOrdenPedidoByID: "SELECT TOP 1 ID_pedido, COUNT(*) AS existeRegistro FROM OrdenesPedidos WHERE ID_pedido = @ID_pedido GROUP BY ID_pedido;",
+  getDetallesOrdenPetidoByID: `SELECT DP.ID_detalle, DP.cantidad, DP.precioUnitario, OP.fecha, OP.operacion_status, OP.ID_pedido, OP.total, 
+  PR.ID_producto, PR.nombre AS producto, DR.*
+  FROM DetallesPedido DP
+  LEFT JOIN OrdenesPedidos OP ON DP.ID_pedido = OP.ID_pedido
+  LEFT JOIN Productos PR ON DP.ID_producto = PR.ID_producto
+  LEFT JOIN DireccionesEnvio DR ON OP.ID_direccion = DR.ID_direccion
+  WHERE DP.ID_pedido = @ID_pedido;
+  `
 };
 
 export const querysDetallesPedido = {
@@ -377,4 +389,11 @@ export const querysLogsActualizacionDatosSensibles = {
   getLogActualizacionDatosSensiblesById: "SELECT * FROM LogsActualizacionDatosSensibles WHERE IDRegistro = @IDRegistro;",
   deleteLogActualizacionDatosSensiblesById: "DELETE FROM LogsActualizacionDatosSensibles WHERE IDRegistro = @IDRegistro;",
   updateLogActualizacionDatosSensiblesById: "UPDATE LogsActualizacionDatosSensibles SET IPUsuario = @IPUsuario, FechaHoraEvento = @FechaHoraEvento, CorreoElectronico = @CorreoElectronico, DescripcionAccion = @DescripcionAccion WHERE IDRegistro = @IDRegistro;"
+};
+
+export const querysImagenesProducto = {
+  addNewImagen: `INSERT INTO ImagenesProducto (ID_producto, imagenUrl) VALUES (@ID_producto, @imagenUrl);`,
+  getImagenesByProductoId: `SELECT * FROM ImagenesProducto WHERE ID_producto = @ID_producto; `,
+  deleteImagenById: ` DELETE FROM ImagenesProducto WHERE ID_imagen = @ID_imagen;`,
+  updateImagenById: `UPDATE ImagenesProducto SET imagenUrl = @imagenUrl WHERE ID_imagen = @ID_imagen;`,
 };

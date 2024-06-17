@@ -23,3 +23,5 @@ export { querysLogsBloqueoInicioSesion } from "./querys";
 export { querysLogsInicioSesionOAuth } from "./querys";
 export { querysLogsActualizacionDatosSensibles } from "./querys";
 
+export { querysImagenesProducto } from "./querys";
+

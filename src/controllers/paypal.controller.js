@@ -21,8 +21,8 @@ const userData = require('../utilidades/paypal_payment.js');
 const membresiaData = require('../utilidades/membresias_payment.js');
 
 export const createOrder = async (req, res) => {
-  const { ID_usuario, total, currentURL } = req.body;
-  userData.setUserData(ID_usuario, total, currentURL);
+  const { ID_usuario, total, currentURL, ID_direccion } = req.body;
+  userData.setUserData(ID_usuario, total, currentURL, ID_direccion);
   try {
 
     const itemsResponse = await axios.get(`${HOST}/api/carrito-compras-ID-usuario/${ID_usuario}`);
@@ -129,6 +129,7 @@ export const captureOrder = async (req, res) => {
           total: datosCompra.total,
           operacion_id: response.data.id,
           operacion_status: response.data.status,
+          ID_direccion: datosCompra.ID_direccion
         }
       });
 

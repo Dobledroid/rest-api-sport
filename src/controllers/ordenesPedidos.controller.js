@@ -2,13 +2,14 @@ import moment from 'moment-timezone';
 import { getConnection, querysOrdenesPedidos, sql } from "../database";
 
 export const addNewOrdenPedido = async (req, res) => {
-  const { ID_usuario, fecha, total, operacion_id, operacion_status } = req.body;
+  const { ID_usuario, fecha, total, operacion_id, operacion_status, ID_direccion } = req.body;
   if (
     ID_usuario == null ||
     fecha == null ||
     total == null ||
     operacion_id == null ||
-    operacion_status == null
+    operacion_status == null ||
+    ID_direccion == null
   ) {
     console.error("Error: Datos incompletos");
     return res.status(400).json({ msg: "Datos incompletos" });
@@ -25,6 +26,7 @@ export const addNewOrdenPedido = async (req, res) => {
       .input("total", sql.Decimal(10, 2), total)
       .input("operacion_id", sql.NVarChar, operacion_id)
       .input("operacion_status", sql.NVarChar, operacion_status)
+      .input("ID_direccion", sql.Int, ID_direccion)
       .query(querysOrdenesPedidos.addNewOrdenPedido);
 
     const insertedID = result.recordset[0].ID_pedido;
@@ -72,6 +74,28 @@ export const getOrdenPedidoByID = async (req, res) => {
       .request()
       .input("ID_pedido", sql.Int, ID_pedido)
       .query(querysOrdenesPedidos.getOrdenPedidoByID);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({ msg: "No se encontró la orden de pedido" });
+    }
+
+    res.json(result.recordset[0]);
+  } catch (error) {
+    console.error("Error al obtener la orden de pedido:", error.message);
+    res.status(500).json({ msg: "Error al obtener la orden de pedido" });
+  }
+};
+
+export const getDetallesOrdenPetidoByID = async (req, res) => {
+  const { ID_pedido } = req.params;
+
+  try {
+    const pool = await getConnection();
+
+    const result = await pool
+      .request()
+      .input("ID_pedido", sql.Int, ID_pedido)
+      .query(querysOrdenesPedidos.getDetallesOrdenPetidoByID);
 
     if (result.recordset.length === 0) {
       return res.status(404).json({ msg: "No se encontró la orden de pedido" });

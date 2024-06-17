@@ -10,10 +10,24 @@ import {
   getListProductsWithImagen,
   getListProductsWithImagenPrincipal,
   getProductByIdWithImagens,
-  getListProductsWithImagenPrincipalAdmin
+  getListProductsWithImagenPrincipalAdmin,
+  createNewProductCrear
 } from "../controllers/products.controller";
 
 const router = Router();
+const multer = require("multer");
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
 
 router.get("/products", getProducts);
 
@@ -24,7 +38,8 @@ router.get("/list-products-imagenPrincipal-admin", getListProductsWithImagenPrin
 
 router.get("/products/relations", getAllProductsWithRelations);
 
-router.post("/products", createNewProduct);
+// router.post("/products", createNewProduct);
+router.post("/products", upload.array('images', 10), createNewProduct);
 
 router.get("/products/count", getTotalProducts);
 

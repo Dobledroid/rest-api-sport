@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+const multer = require('multer');
+const bodyParser = require('body-parser');
 import passport from 'passport';
 // import './passport-config';
 import requestIp from 'request-ip';
@@ -79,6 +81,41 @@ app.get("/users", (req, res) => {
   res.send("Obteniendo información del usuario!");
 });
 
+// Configuración de body-parser para manejar datos JSON
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Configuración de multer para manejar la carga de archivos
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+    cb(null, `${Date.now()}-${file.originalname}`);
+  }
+});
+
+const upload = multer({ storage });
+
+
+// Ruta para manejar la carga de archivos
+app.post('/api/upload', upload.array('images', 10), (req, res) => {
+  const { name, email } = req.body;
+  const files = req.files;
+
+  console.log('Name:', name);
+  console.log('Email:', email);
+  console.log('Files:', files);
+
+  res.json({
+    message: 'Datos recibidos exitosamente',
+    data: {
+      name,
+      email,
+      files
+    }
+  });
+});
 
 // Routes
 app.use("/api", productRoutes);

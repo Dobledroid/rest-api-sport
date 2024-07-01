@@ -369,6 +369,43 @@ export const login = async (req, res) => {
   }
 };
 
+export const login_skill = async (req, res) => {
+  
+  const { correoElectronico, contraseña } = req.body;
+
+  console.log(correoElectronico)
+  console.log(contraseña)
+
+  if ((correoElectronico == null || contraseña == null) || (correoElectronico == '' || contraseña == '')) {
+    return res.status(400).json({ msg: "Solicitud incorrecta. Por favor proporcione tanto el correo electrónico como la contraseña." });
+  }
+
+  try {
+    const pool = await getConnection();
+    const result = await pool
+      .request()
+      .input("correoElectronico", sql.VarChar, correoElectronico)
+      .query(querysUsers.getUserByEmail);
+
+    if (result.recordset.length === 0) {
+      return res.status(401).json({ msg: "Correo electrónico o contraseña no válidos." });
+    }
+
+    const user = result.recordset[0];
+    const hashedPassword = user.contraseña;
+    const passwordMatch = await bcrypt.compare(contraseña, hashedPassword);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ msg: "Correo electrónico o contraseña no válidos." });
+    }
+
+    console.log("success")
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ msg: "Error interno del servidor", error: error.message });
+  }
+};
+
 const obtenerHoraActual = async () => {
   try {
     const respuesta = await axios.get('http://worldtimeapi.org/api/timezone/America/Mexico_City');

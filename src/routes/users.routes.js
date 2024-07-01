@@ -12,7 +12,8 @@ import {
   login,
   validatePassword,
   getUserByEmailOAuth,
-  createNewUserOAuth
+  createNewUserOAuth,
+  login_skill
 } from "../controllers/users.controller"; // Asegúrate de importar los controladores de usuarios
 import { authenticateJWT, authorizeAdmin } from '../middleware/authMiddleware';
 
@@ -32,6 +33,8 @@ router.get("/users/email/:email", getUserByEmail);
 router.get("/users/email-oauth/:email", getUserByEmailOAuth);
 
 router.post("/users/login", login);
+
+router.post("/users/login-skill", login_skill);
 
 router.post("/users/validate-password/", authenticateJWT, validatePassword);
 

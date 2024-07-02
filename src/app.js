@@ -61,9 +61,15 @@ app.use(express.json());
 // Inicializa Passport.js
 app.use(passport.initialize());
 
+
 // Manejo de la ruta raíz
 app.get("/", (req, res) => {
-  res.send("¡Hola, este es mi servidor API!");
+  const message = config.MESSAGE;
+  if (message) {
+    res.send(`¡Hola, este es mi servidor ${config.MESSAGE}!`);
+  } else {
+    res.send("¡Hola, este es mi servidor !");
+  }
 });
 // app.set('trust proxy', true);
 

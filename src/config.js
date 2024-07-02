@@ -7,6 +7,7 @@ export default {
   dbPassword: process.env.DB_PASSWORD,
   dbServer: process.env.DB_SERVER,
   dbDatabase: process.env.DB_DATABASE,
+  MESSAGE: process.env.MESSAGE,
 };
 
 export const PAYPAL_API_CLIENT = process.env.PAYPAL_API_CLIENT;
@@ -36,5 +37,6 @@ export const HOST =
 //   dbDatabase: process.env.DB_DATABASE || "SportGYM",
 // };
 
-export const MERCADOPAGO_API_KEY = process.env.MERCADOPAGO_API_KEY
-;
+export const MERCADOPAGO_API_KEY = process.env.MERCADOPAGO_API_KEY;
+
+export const MESSAGE = process.env.MESSAGE;

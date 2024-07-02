@@ -2,11 +2,11 @@ import { config } from "dotenv";
 config();
 
 export default {
-  port: process.env.PORT,
-  dbUser: process.env.DB_USER,
-  dbPassword: process.env.DB_PASSWORD,
-  dbServer: process.env.DB_SERVER,
-  dbDatabase: process.env.DB_DATABASE,
+  port: process.env.PORT || 4000,
+  dbUser: process.env.DB_USER || "sqlserver",
+  dbPassword: process.env.DB_PASSWORD || "sqlserver",
+  dbServer: process.env.DB_SERVER || "104.155.155.22",
+  dbDatabase: process.env.DB_DATABASE || "SportGYM",
   MESSAGE: process.env.MESSAGE,
 };
 

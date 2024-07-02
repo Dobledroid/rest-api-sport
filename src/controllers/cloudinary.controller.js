@@ -39,6 +39,7 @@ export const subirImagenQR = async (data, fechaInicio) => {
 
 // Función para subir imágenes a Cloudinary
 export const subirImagenesProducto = async (files, fechaInicio) => {
+    console.log("subirImagenes",files)
     try {
       const urls = [];
       for (const file of files) {
@@ -49,7 +50,8 @@ export const subirImagenesProducto = async (files, fechaInicio) => {
           public_id: publicId,
         });
         urls.push(result.secure_url);
-        fs.unlinkSync(filePath); // Elimina el archivo después de subirlo
+        console.log("result", result)
+        // fs.unlinkSync(filePath); // Elimina el archivo después de subirlo
       }
       
       return urls;

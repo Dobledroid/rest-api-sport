@@ -14,19 +14,32 @@ import {
   createNewProductCrear
 } from "../controllers/products.controller";
 
-const router = Router();
-const multer = require("multer");
+import { v2 as cloudinary } from 'cloudinary';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import multer from 'multer';
+import { config } from 'dotenv';
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
+// Configurar dotenv para cargar las variables de entorno
+config();
+
+// Configurar Cloudinary usando CLOUDINARY_URL
+cloudinary.config({
+  cloudinary_url: process.env.CLOUDINARY_URL,
+});
+console.log(process.env.CLOUDINARY_URL)
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'uploads',
+    format: async (req, file) => 'png', // Cambia el formato si es necesario
+    public_id: (req, file) => `${Date.now()}-${file.originalname}`,
   },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: storage });
+
+const router = Router();
 
 
 router.get("/products", getProducts);

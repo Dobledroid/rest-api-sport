@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
-const multer = require('multer');
-const bodyParser = require('body-parser');
+// const multer = require('multer');
+// const bodyParser = require('body-parser');
 import passport from 'passport';
 // import './passport-config';
 import requestIp from 'request-ip';
@@ -87,21 +87,21 @@ app.get("/users", (req, res) => {
   res.send("Obteniendo información del usuario!");
 });
 
-// Configuración de body-parser para manejar datos JSON
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+// // Configuración de body-parser para manejar datos JSON
+// app.use(bodyParser.json());
+// app.use(bodyParser.urlencoded({ extended: true }));
 
-// Configuración de multer para manejar la carga de archivos
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}-${file.originalname}`);
-  }
-});
+// // Configuración de multer para manejar la carga de archivos
+// const storage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, 'uploads/');
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, `${Date.now()}-${file.originalname}`);
+//   }
+// });
 
-const upload = multer({ storage });
+// const upload = multer({ storage });
 
 
 // // Ruta para manejar la carga de archivos

@@ -130,8 +130,8 @@ export const getAllProductsWithRelations = async (req, res) => {
 export const createNewProduct = async (req, res) => {
   const { nombre, descripcion, categoria, subcategoria, marca, precioBase, descuentoPorcentaje, precioFinal, cantidadExistencias } = req.body;
   const files = req.files; 
-  // console.log(req.body)
-  // console.log("files", files)
+  console.log(req.body)
+  console.log("files", files)
   try {
     const pool = await getConnection();
     const transaction = pool.transaction();

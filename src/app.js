@@ -25,7 +25,7 @@ import direccionEnvioPredeterminada from "./routes/direccionEnvioPredeterminada.
 import date from "./routes/date.routes.js";
 import prueba from "./routes/prueba.routes.js";
 import QRRoutes from "./routes/QR.routes.js";
-import cloudinaryRoutes from "./routes/cloudinary.routes";
+// import cloudinaryRoutes from "./routes/cloudinary.routes";
 import preguntaRoutes from "./routes/pregunta.routes.js";
 import ordenesPedidos from "./routes/ordenesPedidos.routes.js";
 import detallesPedido from "./routes/detallesPedido.routes.js";
@@ -104,31 +104,31 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 
-// Ruta para manejar la carga de archivos
-app.post('/api/upload', upload.array('images', 10), (req, res) => {
-  const { name, email } = req.body;
-  const files = req.files;
+// // Ruta para manejar la carga de archivos
+// app.post('/api/upload', upload.array('images', 10), (req, res) => {
+//   const { name, email } = req.body;
+//   const files = req.files;
 
-  console.log('Name:', name);
-  console.log('Email:', email);
-  console.log('Files:', files);
+//   console.log('Name:', name);
+//   console.log('Email:', email);
+//   console.log('Files:', files);
 
-  res.json({
-    message: 'Datos recibidos exitosamente',
-    data: {
-      name,
-      email,
-      files
-    }
-  });
-});
+//   res.json({
+//     message: 'Datos recibidos exitosamente',
+//     data: {
+//       name,
+//       email,
+//       files
+//     }
+//   });
+// });
 
 // Routes
 app.use("/api", productRoutes);
 app.use("/api", usersRoutes);
 app.use("/api", emailRoutes);
 app.use("/api", sendMethod);
-app.use("/api", cloudinaryRoutes);
+// app.use("/api", cloudinaryRoutes);
 app.use("/api", TokenRoutes);
 app.use("/api", categoriasProdutosRoutes);
 app.use("/api", subcategoriasProductosRoutes);

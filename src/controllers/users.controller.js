@@ -8,9 +8,6 @@ import { addNewLogBloqueoInicioSesion } from "../controllers/logsBloqueoInicioSe
 import bcrypt from 'bcrypt';
 const jwt = require('jsonwebtoken');
 
-const moment = require('moment-timezone');
-const axios = require('axios');
-
 export const getUsers = async (req, res) => {
   try {
     const pool = await getConnection();
@@ -408,8 +405,12 @@ export const login_skill = async (req, res) => {
 
 const obtenerHoraActual = async () => {
   try {
-    const respuesta = await axios.get('http://worldtimeapi.org/api/timezone/America/Mexico_City');
-    const horaActualCompleta = respuesta.data.datetime;
+    const respuesta = await fetch('http://worldtimeapi.org/api/timezone/America/Mexico_City');
+    if (!respuesta.ok) {
+      throw new Error('No se pudo obtener la hora actual desde la API de WorldTimeAPI');
+    }
+    const datos = await respuesta.json();
+    const horaActualCompleta = datos.datetime;
     return horaActualCompleta;
   } catch (error) {
     throw new Error('No se pudo obtener la hora actual desde la API de WorldTimeAPI');
